@@ -83,7 +83,7 @@ async function getMbData(url) {
   const release = await mbApi.lookupEntity(
     'release',
     url.match(/release\/(.*?)$/)[1],
-    ['artists', 'recordings', 'release-groups']
+    ['artists', 'recordings', 'release-groups', 'artist-credits']
   );
   const group = await mbApi.lookupEntity(
     'release-group',
@@ -95,7 +95,16 @@ async function getMbData(url) {
   );
 
   const artist = (release['artist-credit'] || [])?.[0]?.name;
-  const tracks = (release.media?.[0]?.tracks || []).map((track) => track.title);
+  const tracks = (release.media?.[0]?.tracks || []).map((track) => {
+    const trackArtists = track.recording['artist-credit'];
+    const extra = trackArtists
+      .map((artist, i) => `${i !== 0 ? artist.name : ''}${artist.joinphrase}`)
+      .join('')
+      .trim();
+    return `${track.title.replace(/’/g, "'")}${
+      extra.length ? ` (${extra})` : ''
+    }`;
+  });
   const year = group['first-release-date'].match(/^\d{4}/)[0];
 
   return {
@@ -265,7 +274,8 @@ async function run() {
     console.log('Similarity:');
     console.log(trackSimilarity);
     logTracks();
-    process.exit();
+    await askQuestion('Continue? ');
+    console.log('Great, continuing...');
   }
 
   console.log('Verify metadata:');
