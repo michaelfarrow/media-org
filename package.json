@@ -1,0 +1,26 @@
+{
+  "name": "namer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "axios": "^1.2.0",
+    "change-case": "^4.1.2",
+    "cheerio": "^1.0.0-rc.12",
+    "fs-extra": "^11.0.0",
+    "klaw": "^4.0.1",
+    "lodash": "^4.17.21",
+    "musicbrainz-api": "^0.10.1",
+    "natural-orderby": "^3.0.1",
+    "promise-sequence": "^1.0.0",
+    "string-similarity": "^4.0.4",
+    "title-case": "^3.0.3",
+    "wikipedia": "^1.1.9",
+    "write-aac-metadata": "^1.0.7"
+  }
+}

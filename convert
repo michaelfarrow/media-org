@@ -1,0 +1,17 @@
+#!/bin/bash
+
+found_files=false
+
+for file in ./*.flac; do
+	[ -f "${file}" ] || continue
+	found_files=true
+	break;
+done
+
+if [ "${found_files}" = "true" ]; then
+	for f in ./*.flac; do
+		file="$(basename "${f}")"
+		name="${file%.*}"
+		ffmpeg -y -i "$f" -map_metadata -1 -c:a libfdk_aac -c:v copy -b:a 320k -cutoff 20000 -vbr 0 -afterburner 1 "./${name}.m4a"
+	done
+fi
