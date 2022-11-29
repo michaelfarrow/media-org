@@ -1,3 +1,5 @@
+#!/bin/node
+
 const MusicBrainzApi = require('musicbrainz-api').MusicBrainzApi;
 const wiki = require('wikipedia');
 const { titleCase } = require('title-case');
