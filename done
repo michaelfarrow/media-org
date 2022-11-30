@@ -1,0 +1,12 @@
+#!/bin/bash
+
+NAME="${PWD##*/}"
+
+FOUND="$(transmission-remote --list | grep "$(echo "$NAME" | sed -r 's/[\[]+/\\[/g')")"
+
+if [[ "$FOUND" != "" ]]; then
+	ID="$(echo $FOUND | grep -Eo '^ *([0-9]+)' )"
+	cd ../
+	transmission-remote -t $ID -r
+	rm -r "$NAME"
+fi;
