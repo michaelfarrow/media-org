@@ -390,7 +390,7 @@ async function run() {
               artist: mbData.artist,
               title: track,
               album: mbData.release,
-              date: mbData.year,
+              year: mbData.year,
               genre: wikipediaData.genres.join(', '),
               track: j + 1,
               ...(discCount > 1 ? { disc: i + 1 } : {}),
