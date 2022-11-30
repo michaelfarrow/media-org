@@ -1,0 +1,19 @@
+#!/bin/bash
+
+found_files=false
+
+for file in ./*.flac; do
+	[ -f "${file}" ] || continue
+	found_files=true
+	break;
+done
+
+if [ "${found_files}" = "true" ]; then
+	for f in ./*.flac; do
+		file="$(basename "${f}")"
+		name="${file%.*}"
+		ffmpeg -i "$f" -y -lavfi showspectrumpic=s=1000x800:mode=separate:start=20k:stop=30k "./${name}.png"
+	done
+
+	http-server -p 3131
+fi;
