@@ -15,5 +15,5 @@ if [ "${found_files}" = "true" ]; then
 		ffmpeg -i "$f" -y -lavfi showspectrumpic=s=1000x800:mode=separate:start=20k:stop=30k "./${name}.png"
 	done
 
-	npx -y http-server -p 3131
+	npx -y http-server -p 3131 -c-1
 fi;
