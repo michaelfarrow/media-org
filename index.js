@@ -116,11 +116,17 @@ async function getMbData(url) {
     release['release-group'].id,
     ['url-rels']
   );
-  const wikidataRel = group.relations.find(
-    (rel) => rel.type.toLowerCase() === 'wikidata'
+  const artist = await mbApi.lookupEntity(
+    'artist',
+    release['artist-credit'][0].artist.id,
+    ['url-rels']
   );
 
-  const artist = (release['artist-credit'] || [])?.[0]?.name;
+  const wikidataRel =
+    group.relations.find((rel) => rel.type.toLowerCase() === 'wikidata') ||
+    artist.relations.find((rel) => rel.type.toLowerCase() === 'wikidata');
+
+  const artistName = release['artist-credit'][0]?.name;
   const discs = release.media
     .filter(
       (media) =>
@@ -146,7 +152,7 @@ async function getMbData(url) {
 
   return {
     release: group.title,
-    artist,
+    artist: artistName,
     wikidata: wikidataRel?.url?.resource,
     discs,
     year,
@@ -304,7 +310,7 @@ async function run() {
 
   const mbData = await getMbData(mbUrl);
 
-  let wikipediaData;
+  let wikipediaData = { genres: [] };
 
   if (mbData.wikidata) {
     const wikidata = await getWikidata(mbData.wikidata);
