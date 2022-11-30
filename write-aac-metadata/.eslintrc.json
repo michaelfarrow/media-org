@@ -1,0 +1,43 @@
+{
+   "root": true,
+   "parser": "@typescript-eslint/parser",
+   "parserOptions": {
+      "ecmaVersion": 2020, // Allows for the parsing of modern ECMAScript features
+      "sourceType": "module", // Allows for the use of imports
+      "ecmaFeatures": {
+      },
+      "project": "./tsconfig.json"
+   },
+   "plugins": [
+      "@typescript-eslint",
+      "deprecation"
+   ],
+   "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended"
+   ],
+   "rules": {
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      "arrow-parens": [
+         "error",
+         "as-needed"
+      ],
+      "semi": [
+         "error",
+         "never"
+      ],
+      "quotes": [
+         "error",
+         "double",
+         {
+            "allowTemplateLiterals": true
+         }
+      ],
+      "@typescript-eslint/no-floating-promises": "error",
+      "no-console": "error",
+      "deprecation/deprecation": "warn"
+   }
+}
+//waiting for these rules
+//https://github.com/typescript-eslint/typescript-eslint/issues/371

@@ -8,12 +8,14 @@ const cheerio = require('cheerio');
 const axios = require('axios');
 const klaw = require('klaw');
 const { orderBy } = require('natural-orderby');
-const { basename, extname } = require('path');
+const path = require('path');
 const stringSimilarity = require('string-similarity');
 const readline = require('readline');
-const metadataWriter = require('write-aac-metadata').default;
+const metadataWriter = require('./write-aac-metadata/dist/src').default;
 const sequence = require('promise-sequence');
 const fs = require('fs-extra');
+const sharp = require('sharp');
+const download = require('download');
 
 const mbApi = new MusicBrainzApi({
   appName: 'farrow-music-namer',
@@ -23,7 +25,9 @@ const mbApi = new MusicBrainzApi({
 
 const mbUrl = process.argv[2];
 
+const DEST = '/home/mike/music-test';
 const SIMILARITY_WARNING = 0.9;
+const ALBUM_ART_RESIZE = 1417;
 
 async function askQuestion(query) {
   const rl = readline.createInterface({
@@ -44,24 +48,45 @@ async function setMeta(file, data) {
   return metadataWriter(file, data, undefined, { debug: false });
 }
 
+async function copyFile(src, dest) {
+  console.log('Copying file', dest);
+  return fs.copy(src, dest);
+}
+
 async function getFiles() {
   const items = [];
 
   return new Promise((resolve, reject) => {
-    klaw('.')
-      .on(
-        'data',
-        (item) =>
-          item.path.endsWith('.m4a') &&
-          items.push({
+    klaw('.', { depthLimit: 1 })
+      .on('data', (item) => {
+        if (item.path.endsWith('.m4a')) {
+          const dirPath = path.dirname(item.path);
+          const dir = dirPath.substring(path.resolve('.').length);
+          if (!items.find((item) => item.dir === dir))
+            items.push({ dir, items: [] });
+          items
+            .find((item) => item.dir === dir)
+            .items.push({
+              ...item,
+              name: path.basename(item.path, path.extname(item.path)),
+              filename: path.basename(item.path),
+            });
+        }
+      })
+      .on('end', () => {
+        resolve(
+          orderBy(items, (item) => item.dir).map((item) => ({
             ...item,
-            name: basename(item.path, extname(item.path)),
-            filename: basename(item.path),
-          })
-      )
-      .on('end', () => resolve(orderBy(items, (item) => item.filename)))
+            items: orderBy(item.items, (item) => item.name),
+          }))
+        );
+      })
       .on('error', reject);
   });
+}
+
+function replaceSpecialChars(str) {
+  return str.replace(/[^a-zA-Z0-9 -]/g, '_');
 }
 
 function processGenres(genres) {
@@ -95,23 +120,34 @@ async function getMbData(url) {
   );
 
   const artist = (release['artist-credit'] || [])?.[0]?.name;
-  const tracks = (release.media?.[0]?.tracks || []).map((track) => {
-    const trackArtists = track.recording['artist-credit'];
-    const extra = trackArtists
-      .map((artist, i) => `${i !== 0 ? artist.name : ''}${artist.joinphrase}`)
-      .join('')
-      .trim();
-    return `${track.title.replace(/’/g, "'")}${
-      extra.length ? ` (${extra})` : ''
-    }`;
-  });
+  const discs = release.media
+    .filter(
+      (media) =>
+        media.format.toLowerCase() === release.media[0].format.toLowerCase()
+    )
+    .map((media) =>
+      media.tracks.map((track) => {
+        const trackArtists = track.recording['artist-credit'];
+        const extra = trackArtists
+          .map(
+            (artist, i) => `${i !== 0 ? artist.name : ''}${artist.joinphrase}`
+          )
+          .join('')
+          .trim();
+        return titleCase(
+          `${track.title.replace(/’/g, "'")}${
+            extra.length ? ` (${extra})` : ''
+          }`
+        ).replace(/Feat\./g, 'feat.');
+      })
+    );
   const year = group['first-release-date'].match(/^\d{4}/)[0];
 
   return {
     release: group.title,
     artist,
     wikidata: wikidataRel?.url?.resource,
-    tracks,
+    discs,
     year,
   };
 }
@@ -223,11 +259,45 @@ async function getWikipediaData(title) {
 
 async function run() {
   const files = await getFiles();
+
+  const coverUrlExists = await fs.exists('./cover.txt');
+
+  if (coverUrlExists) {
+    const coverUrl = (await fs.readFile('./cover.txt', 'utf-8')).trim();
+    console.log('Downloading cover file', coverUrl);
+    await download(coverUrl, '.', { filename: 'cover.jpg' });
+  }
+
   const coverExists = await fs.exists('./cover.jpg');
 
   if (!coverExists) {
     console.log('cover file does not exist');
     process.exit();
+  }
+
+  const cover = await sharp('./cover.jpg').jpeg({ quality: 100 });
+  const coverMeta = await cover.metadata();
+
+  let albumArtUndersized = false;
+  let albumArtOversized = false;
+
+  if (
+    coverMeta.width < ALBUM_ART_RESIZE ||
+    coverMeta.width < ALBUM_ART_RESIZE
+  ) {
+    albumArtUndersized = true;
+    await askQuestion('Album art undersized, continue? ');
+    console.log('Great, continuing...');
+  } else if (
+    coverMeta.width > ALBUM_ART_RESIZE ||
+    coverMeta.width > ALBUM_ART_RESIZE
+  ) {
+    albumArtOversized = true;
+  }
+
+  if (albumArtOversized) {
+    console.log('Resizing album art');
+    cover.resize(ALBUM_ART_RESIZE, ALBUM_ART_RESIZE);
   }
 
   const mbData = await getMbData(mbUrl);
@@ -245,26 +315,35 @@ async function run() {
   function logTracks() {
     console.log('');
     console.log('Files:');
-    console.log(files.map((file) => file.filename));
+    console.log(files.map((dir) => dir.items.map((file) => file.name)));
     console.log('');
     console.log('MusicBrainz:');
-    console.log(mbData.tracks);
+    console.log(mbData.discs);
   }
 
-  if (files.length !== mbData.tracks.length) {
+  let trackDiff = false;
+  files.forEach((dir, i) => {
+    if (!trackDiff && dir.items.length !== mbData.discs[i]?.length) {
+      trackDiff = true;
+    }
+  });
+
+  if (files.length !== mbData.discs.length || trackDiff) {
     console.log('Number of tracks does not match');
     logTracks();
     process.exit();
   }
 
-  const trackSimilarity = files.map((file, i) =>
-    stringSimilarity.compareTwoStrings(
-      file.name.toLowerCase().replace(/^\d+\.?\s*-?\s*/, ''),
-      mbData.tracks[i].toLowerCase()
+  const trackSimilarity = files.map((dir, i) =>
+    dir.items.map((file, j) =>
+      stringSimilarity.compareTwoStrings(
+        file.name.toLowerCase().replace(/^\d+\.?\s*-?\s*/, ''),
+        mbData.discs[i][j].toLowerCase()
+      )
     )
   );
 
-  const similarityWarning = trackSimilarity.some(
+  const similarityWarning = _.flatten(trackSimilarity).some(
     (sim) => sim < SIMILARITY_WARNING
   );
 
@@ -284,31 +363,65 @@ async function run() {
   console.log('Album:', mbData.release);
   console.log('Year:', mbData.year);
   console.log('Genres:', wikipediaData.genres);
-  console.log(
-    'Tracks:',
-    mbData.tracks.map(
-      (track, i) => `${String(i + 1).padStart(2, '0')} ${track}`
-    )
-  );
+  console.log('Tracks:', mbData.discs);
 
   await askQuestion('All OK? ');
 
   console.log('Great, continuing...');
 
-  sequence(
-    mbData.tracks.map(
-      (track, i) => () =>
-        setMeta(files[i].path, {
-          artist: mbData.artist,
-          title: track,
-          album: mbData.release,
-          date: mbData.year,
-          genre: wikipediaData.genres.join(', '),
-          track: i + 1,
-          coverPicturePath: 'cover.jpg',
-        })
+  const discCount = mbData.discs.length;
+
+  await cover.toFile('cover.embed.jpg');
+
+  await sequence(
+    _.flatten(
+      mbData.discs.map((disc, i) =>
+        disc.map(
+          (track, j) => () =>
+            setMeta(files[i].items[j].path, {
+              artist: mbData.artist,
+              title: track,
+              album: mbData.release,
+              date: mbData.year,
+              genre: wikipediaData.genres.join(', '),
+              track: j + 1,
+              ...(discCount > 1 ? { disc: i + 1 } : {}),
+              coverPicturePath: 'cover.embed.jpg',
+            })
+        )
+      )
     )
   );
+
+  const albumDest = `${DEST}/${replaceSpecialChars(
+    mbData.artist
+  )}/${replaceSpecialChars(mbData.release)}`;
+
+  await sequence(
+    _.flatten(
+      mbData.discs.map((disc, i) =>
+        disc.map(
+          (track, j) => () =>
+            copyFile(
+              files[i].items[j].path,
+              `${albumDest}/${discCount > 1 ? `${i + 1}-` : ''}${String(
+                j + 1
+              ).padStart(2, '0')} ${track}.m4a`
+            )
+        )
+      )
+    )
+  );
+
+  console.log('Saving cover', `${albumDest}/cover.jpg`);
+  await cover.toFile(`${albumDest}/cover.jpg`);
+
+  if (albumArtUndersized || albumArtOversized) {
+    copyFile(
+      'cover.jpg',
+      `${albumDest}/cover.${albumArtOversized ? 'full' : 'undersized'}.jpg`
+    );
+  }
 }
 
 run();
