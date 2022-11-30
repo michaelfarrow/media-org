@@ -87,7 +87,7 @@ async function getFiles() {
 }
 
 function replaceSpecialChars(str) {
-  return str.replace(/[^a-zA-Z0-9 -]/g, '_');
+  return str.replace(/[\/\.]/g, '_');
 }
 
 function processGenres(genres) {
@@ -414,7 +414,7 @@ async function run() {
               files[i].items[j].path,
               `${albumDest}/${discCount > 1 ? `${i + 1}-` : ''}${String(
                 j + 1
-              ).padStart(2, '0')} ${track}.m4a`
+              ).padStart(2, '0')} ${replaceSpecialChars(track)}.m4a`
             )
         )
       )
