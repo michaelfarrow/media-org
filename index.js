@@ -24,8 +24,9 @@ const mbApi = new MusicBrainzApi({
 });
 
 const mbUrl = process.argv[2];
+const albumArtUrl = process.argv[3];
 
-const DEST = '/home/mike/music-test';
+const DEST = '/opt/media/music';
 const SIMILARITY_WARNING = 0.9;
 const ALBUM_ART_RESIZE = 1417;
 
@@ -260,10 +261,11 @@ async function getWikipediaData(title) {
 async function run() {
   const files = await getFiles();
 
-  const coverUrlExists = await fs.exists('./cover.txt');
+  const coverUrlFileExists = await fs.exists('./cover.txt');
 
-  if (coverUrlExists) {
-    const coverUrl = (await fs.readFile('./cover.txt', 'utf-8')).trim();
+  if (albumArtUrl || coverUrlFileExists) {
+    const coverUrl =
+      albumArtUrl || (await fs.readFile('./cover.txt', 'utf-8')).trim();
     console.log('Downloading cover file', coverUrl);
     await download(coverUrl, '.', { filename: 'cover.jpg' });
   }
