@@ -86,8 +86,8 @@ async function getFiles() {
   });
 }
 
-function replaceSpecialChars(str) {
-  return str.replace(/[\/\.]/g, '_');
+function replaceSpecialChars(str, dir) {
+  return dir ? str.replace(/[\/]/g, '_') : str.replace(/[\/\.]/g, '_');
 }
 
 function processGenres(genres) {
@@ -402,8 +402,9 @@ async function run() {
   );
 
   const albumDest = `${DEST}/${replaceSpecialChars(
-    mbData.artist
-  )}/${replaceSpecialChars(mbData.release)}`;
+    mbData.artist,
+    true
+  )}/${replaceSpecialChars(mbData.release, true)}`;
 
   await sequence(
     _.flatten(
