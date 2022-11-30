@@ -126,7 +126,7 @@ async function getMbData(url) {
     group.relations.find((rel) => rel.type.toLowerCase() === 'wikidata') ||
     artist.relations.find((rel) => rel.type.toLowerCase() === 'wikidata');
 
-  const artistName = release['artist-credit'][0]?.name;
+  const artistName = artist.name;
   const discs = release.media
     .filter(
       (media) =>
@@ -291,14 +291,16 @@ async function run() {
 
   if (
     coverMeta.width < ALBUM_ART_RESIZE ||
-    coverMeta.width < ALBUM_ART_RESIZE
+    coverMeta.height < ALBUM_ART_RESIZE
   ) {
     albumArtUndersized = true;
-    await askQuestion('Album art undersized, continue? ');
+    await askQuestion(
+      `Album art undersized (${coverMeta.width} x ${coverMeta.height}), continue? `
+    );
     console.log('Great, continuing...');
   } else if (
     coverMeta.width > ALBUM_ART_RESIZE ||
-    coverMeta.width > ALBUM_ART_RESIZE
+    coverMeta.height > ALBUM_ART_RESIZE
   ) {
     albumArtOversized = true;
   }
