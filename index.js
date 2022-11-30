@@ -105,6 +105,10 @@ function processGenres(genres) {
   return _.uniq(_genres.map((genre) => titleCase(genre)));
 }
 
+function replaceStrangeChars(str) {
+  return str.replace(/’/g, "'").replace(/‐/g, '-');
+}
+
 async function getMbData(url) {
   const release = await mbApi.lookupEntity(
     'release',
@@ -126,7 +130,7 @@ async function getMbData(url) {
     group.relations.find((rel) => rel.type.toLowerCase() === 'wikidata') ||
     artist.relations.find((rel) => rel.type.toLowerCase() === 'wikidata');
 
-  const artistName = artist.name;
+  const artistName = replaceStrangeChars(artist.name);
   const discs = release.media
     .filter(
       (media) =>
@@ -142,7 +146,7 @@ async function getMbData(url) {
           .join('')
           .trim();
         return titleCase(
-          `${track.title.replace(/’/g, "'")}${
+          `${replaceStrangeChars(track.title)}${
             extra.length ? ` (${extra})` : ''
           }`
         ).replace(/Feat\./g, 'feat.');
