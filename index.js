@@ -54,6 +54,10 @@ async function copyFile(src, dest) {
   return fs.copy(src, dest);
 }
 
+function trackTitle(title) {
+  return title.replace(/remix/g, 'Remix');
+}
+
 async function getFiles() {
   const items = [];
 
@@ -145,7 +149,7 @@ async function getMbData(url) {
           )
           .join('')
           .trim();
-        return titleCase(
+        return trackTitle(
           `${replaceStrangeChars(track.title)}${
             extra.length ? ` (${extra})` : ''
           }`
