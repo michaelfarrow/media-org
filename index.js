@@ -514,7 +514,7 @@ async function run() {
 
   if (albumArtUndersized || albumArtOversized) {
     copyFile(
-      'cover.jpg',
+      coverFile,
       `${albumDest}/cover.${albumArtOversized ? 'full' : 'undersized'}.jpg`
     );
   }
