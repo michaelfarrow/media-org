@@ -55,7 +55,10 @@ async function copyFile(src, dest) {
 }
 
 function trackTitle(title) {
-  return title.replace(/remix/g, 'Remix');
+  return titletitle
+    .replace(/remix/g, 'Remix')
+    .replace(/mix/g, 'Mix')
+    .replace(/extended/g, 'Extended');
 }
 
 async function getFiles() {
@@ -145,7 +148,11 @@ async function getMbData(url) {
         const trackArtists = track.recording['artist-credit'];
         const extra = trackArtists
           .map(
-            (artist, i) => `${i !== 0 ? artist.name : ''}${artist.joinphrase}`
+            (artist, i) =>
+              `${i !== 0 ? artist.name : ''}${artist.joinphrase.replace(
+                /&/,
+                'with'
+              )}`
           )
           .join('')
           .trim();
