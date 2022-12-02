@@ -326,7 +326,7 @@ async function run() {
   }
 
   const fullCoverExists = await fs.exists('./cover.full.jpg');
-  const undersizedCoverExists = await fs.exists('./cover.full.jpg');
+  const undersizedCoverExists = await fs.exists('./cover.undersized.jpg');
   const coverExists = await fs.exists('./cover.jpg');
 
   if (!coverExists && !fullCoverExists && !undersizedCoverExists) {
