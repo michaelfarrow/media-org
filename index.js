@@ -421,7 +421,7 @@ async function run() {
   const trackSimilarity = files.map((dir, i) =>
     dir.items.map((file, j) =>
       stringSimilarity.compareTwoStrings(
-        file.name.toLowerCase().replace(/^\d+\.?\s*-?\s*/, ''),
+        file.name.toLowerCase().replace(/^(\d+-)?\d+\.?\s*-?\s*/, ''),
         mbData.discs[i][j].title.toLowerCase()
       )
     )
