@@ -23,7 +23,7 @@ const mbApi = new MusicBrainzApi({
   appContactInfo: 'mike@farrow.io',
 });
 
-const mbUrl = process.argv[2];
+let mbUrl = process.argv[2];
 const albumArtUrl = process.argv[3];
 
 const DEST = '/opt/media/music';
@@ -161,7 +161,7 @@ async function getMbData(url) {
           title: trackTitle(replaceStrangeChars(track.title)),
         };
         /*
-        title: trackTitle(
+	title: trackTitle(
           `${replaceStrangeChars(track.title)}${
             extra.length ? ` (${extra})` : ''
           }`
@@ -172,6 +172,7 @@ async function getMbData(url) {
   const year = group['first-release-date'].match(/^\d{4}/)[0];
 
   return {
+    id: release.id,
     release: group.title,
     artist: artistName,
     wikidata: wikidataRel?.url?.resource,
@@ -288,23 +289,39 @@ async function getWikipediaData(title) {
 async function run() {
   const files = await getFiles();
 
-  const coverUrlFileExists = await fs.exists('./cover.txt');
+  const mbIdFileExists = await fs.exists('./mbid');
+  const coverUrlFileExists = await fs.exists('./cover');
+
+  if (mbIdFileExists) {
+    mbUrl = `https://musicbrainz.org/release/${(
+      await fs.readFile('./mbid', 'utf-8')
+    ).trim()}`;
+  }
 
   if (albumArtUrl || coverUrlFileExists) {
     const coverUrl =
-      albumArtUrl || (await fs.readFile('./cover.txt', 'utf-8')).trim();
+      albumArtUrl || (await fs.readFile('./cover', 'utf-8')).trim();
     console.log('Downloading cover file', coverUrl);
     await download(coverUrl, '.', { filename: 'cover.jpg' });
   }
 
+  const fullCoverExists = await fs.exists('./cover.full.jpg');
+  const undersizedCoverExists = await fs.exists('./cover.full.jpg');
   const coverExists = await fs.exists('./cover.jpg');
 
-  if (!coverExists) {
+  if (!coverExists && !fullCoverExists && !undersizedCoverExists) {
     console.log('cover file does not exist');
     process.exit();
   }
 
-  const cover = await sharp('./cover.jpg').jpeg({ quality: 100 });
+  const coverFile = fullCoverExists
+    ? './cover.full.jpg'
+    : undersizedCoverExists
+    ? './cover.undersized.jpg'
+    : './cover.jpg';
+
+  console.log('Using cover file:', coverFile);
+  const cover = await sharp(coverFile).jpeg({ quality: 100 });
   const coverMeta = await cover.metadata();
 
   let albumArtUndersized = false;
@@ -475,6 +492,9 @@ async function run() {
       `${albumDest}/cover.${albumArtOversized ? 'full' : 'undersized'}.jpg`
     );
   }
+
+  console.log('Saving mbid', `${albumDest}/mbid`);
+  await fs.writeFile(`${albumDest}/mbid`, mbData.id, 'utf-8');
 }
 
 run();
