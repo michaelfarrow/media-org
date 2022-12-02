@@ -69,21 +69,27 @@ async function getFiles() {
       .on('data', (item) => {
         if (item.path.endsWith('.m4a')) {
           const dirPath = path.dirname(item.path);
-          const dir = dirPath.substring(path.resolve('.').length);
-          if (!items.find((item) => item.dir === dir))
-            items.push({ dir, items: [] });
+          const filename = path.basename(item.path);
+          const name = path.basename(item.path, path.extname(item.path));
+          let group = dirPath.substring(path.resolve('.').length);
+          const discNumber = name.match(/^(\d+)-\d+/);
+          if (group === '' && discNumber) {
+            group = discNumber[1];
+          }
+          if (!items.find((item) => item.group === group))
+            items.push({ group, items: [] });
           items
-            .find((item) => item.dir === dir)
+            .find((item) => item.group === group)
             .items.push({
               ...item,
-              name: path.basename(item.path, path.extname(item.path)),
-              filename: path.basename(item.path),
+              name,
+              filename,
             });
         }
       })
       .on('end', () => {
         resolve(
-          orderBy(items, (item) => item.dir).map((item) => ({
+          orderBy(items, (item) => item.group).map((item) => ({
             ...item,
             items: orderBy(item.items, (item) => item.name),
           }))
