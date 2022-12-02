@@ -44,6 +44,8 @@ const SPECIAL_WORDS = [
 ];
 
 async function askQuestion(query) {
+  if (process.env.NAMER_AUTO === 'true') return Promise.resolve();
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
