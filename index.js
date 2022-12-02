@@ -466,7 +466,7 @@ async function run() {
           (track, j) => () =>
             setMeta(files[i].items[j].path, {
               artist: multipleArtists
-                ? track.artists.join(', ')
+                ? track.artists.join('; ')
                 : mbData.artist,
               ...(multipleArtists ? { albumArtist: mbData.artist } : {}),
               title: track.title,
