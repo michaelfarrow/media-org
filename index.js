@@ -37,6 +37,7 @@ const SPECIAL_WORDS = [
   'demo',
   'version',
   'edit',
+  'refix',
 ];
 
 async function askQuestion(query) {
