@@ -363,8 +363,8 @@ async function run() {
     );
     console.log('Great, continuing...');
   } else if (
-    coverMeta.width > ALBUM_ART_RESIZE ||
-    coverMeta.height > ALBUM_ART_RESIZE
+    coverMeta.width >= ALBUM_ART_RESIZE ||
+    coverMeta.height >= ALBUM_ART_RESIZE
   ) {
     albumArtOversized = true;
   }
