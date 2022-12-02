@@ -425,7 +425,7 @@ async function run() {
     dir.items.map((file, j) =>
       stringSimilarity.compareTwoStrings(
         file.name.toLowerCase().replace(/^(\d+-)?\d+\.?\s*-?\s*/, ''),
-        mbData.discs[i][j].title.toLowerCase()
+        replaceSpecialChars(mbData.discs[i][j].title.toLowerCase())
       )
     )
   );
