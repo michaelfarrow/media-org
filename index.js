@@ -468,10 +468,8 @@ async function run() {
         disc.map(
           (track, j) => () =>
             setMeta(files[i].items[j].path, {
-              artist: multipleArtists
-                ? track.artists.join('; ')
-                : mbData.artist,
-              ...(multipleArtists ? { albumArtist: mbData.artist } : {}),
+              artist: track.artists.join('; '),
+              albumArtist: mbData.artist,
               title: track.title,
               album: mbData.release,
               year: mbData.year,
