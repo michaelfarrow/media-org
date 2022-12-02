@@ -362,10 +362,7 @@ async function run() {
       `Album art undersized (${coverMeta.width} x ${coverMeta.height}), continue? `
     );
     console.log('Great, continuing...');
-  } else if (
-    coverMeta.width >= ALBUM_ART_RESIZE ||
-    coverMeta.height >= ALBUM_ART_RESIZE
-  ) {
+  } else {
     albumArtOversized = true;
   }
 
