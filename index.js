@@ -30,12 +30,13 @@ const DEST = '/opt/media/music';
 const SIMILARITY_WARNING = 0.9;
 const ALBUM_ART_RESIZE = 1417;
 const SPECIAL_WORDS = [
-  'mix',
   'remix',
+  'mix',
   'extended',
   'original',
   'demo',
   'version',
+  'edit',
 ];
 
 async function askQuestion(query) {
@@ -67,7 +68,7 @@ function trackTitle(title) {
 
   SPECIAL_WORDS.forEach((word) => {
     _title = _title.replace(
-      new RegExp(`(\\(.*?)${word}(.*?\\))`, 'ig'),
+      new RegExp(`(\\(.*?)(?<![a-z])${word}(.*?\\))`, 'ig'),
       '$1' + titleCase(word) + '$2'
     );
   });
