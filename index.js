@@ -185,7 +185,9 @@ async function getMbData(url) {
           .join('')
           .trim();
         return {
-          artists: trackArtists.map((artist) => artist.name),
+          artists: trackArtists.map((artist) =>
+            replaceStrangeChars(artist.name)
+          ),
           title: trackTitle(replaceStrangeChars(track.title)),
         };
         /*
