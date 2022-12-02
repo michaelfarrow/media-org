@@ -29,6 +29,14 @@ const albumArtUrl = process.argv[3];
 const DEST = '/opt/media/music';
 const SIMILARITY_WARNING = 0.9;
 const ALBUM_ART_RESIZE = 1417;
+const SPECIAL_WORDS = [
+  'mix',
+  'remix',
+  'extended',
+  'original',
+  'demo',
+  'version',
+];
 
 async function askQuestion(query) {
   const rl = readline.createInterface({
@@ -55,10 +63,16 @@ async function copyFile(src, dest) {
 }
 
 function trackTitle(title) {
-  return title
-    .replace(/remix/g, 'Remix')
-    .replace(/mix/g, 'Mix')
-    .replace(/extended/g, 'Extended');
+  let _title = title;
+
+  SPECIAL_WORDS.forEach((word) => {
+    _title = _title.replace(
+      new RegExp(`(\\(.*?)${word}(.*?\\))`, 'ig'),
+      '$1' + titleCase(word) + '$2'
+    );
+  });
+
+  return _title;
 }
 
 async function getFiles() {
