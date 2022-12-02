@@ -39,6 +39,7 @@ const SPECIAL_WORDS = [
   'edit',
   'refix',
   'acoustic',
+  'live',
 ];
 
 async function askQuestion(query) {
