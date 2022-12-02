@@ -160,6 +160,7 @@ async function getMbData(url) {
     artist.relations.find((rel) => rel.type.toLowerCase() === 'wikidata');
 
   const artistName = replaceStrangeChars(artist.name);
+  const albumTitle = replaceStrangeChars(group.title);
   const discs = release.media
     .filter(
       (media) =>
@@ -195,7 +196,7 @@ async function getMbData(url) {
 
   return {
     id: release.id,
-    release: group.title,
+    release: albumTitle,
     artist: artistName,
     wikidata: wikidataRel?.url?.resource,
     discs,
