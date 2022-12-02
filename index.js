@@ -509,12 +509,10 @@ async function run() {
   console.log('Saving cover', `${albumDest}/cover.jpg`);
   await cover.toFile(`${albumDest}/cover.jpg`);
 
-  if (albumArtUndersized || albumArtOversized) {
-    copyFile(
-      coverFile,
-      `${albumDest}/cover.${albumArtOversized ? 'full' : 'undersized'}.jpg`
-    );
-  }
+  copyFile(
+    coverFile,
+    `${albumDest}/cover.${albumArtOversized ? 'full' : 'undersized'}.jpg`
+  );
 
   console.log('Saving mbid', `${albumDest}/mbid`);
   await fs.writeFile(`${albumDest}/mbid`, mbData.id, 'utf-8');
