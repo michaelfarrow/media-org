@@ -55,7 +55,7 @@ async function copyFile(src, dest) {
 }
 
 function trackTitle(title) {
-  return titletitle
+  return title
     .replace(/remix/g, 'Remix')
     .replace(/mix/g, 'Mix')
     .replace(/extended/g, 'Extended');
@@ -156,11 +156,17 @@ async function getMbData(url) {
           )
           .join('')
           .trim();
-        return trackTitle(
+        return {
+          artists: trackArtists.map((artist) => artist.name),
+          title: trackTitle(replaceStrangeChars(track.title)),
+        };
+        /*
+        title: trackTitle(
           `${replaceStrangeChars(track.title)}${
             extra.length ? ` (${extra})` : ''
           }`
-        ).replace(/Feat\./g, 'feat.');
+        ).replace(/Feat\./g, 'feat.')}
+	*/
       })
     );
   const year = group['first-release-date'].match(/^\d{4}/)[0];
@@ -326,6 +332,9 @@ async function run() {
   }
 
   const mbData = await getMbData(mbUrl);
+  const multipleArtists = _.flatten(mbData.discs).some(
+    (track) => track.artists.length > 1
+  );
 
   let wikipediaData = { genres: [] };
 
@@ -337,13 +346,26 @@ async function run() {
     }
   }
 
+  function logDiscs() {
+    console.log(
+      mbData.discs.map((disc) =>
+        disc.map(
+          (track) =>
+            `${track.title}${
+              multipleArtists ? ` [${track.artists.join(', ')}]` : ''
+            }`
+        )
+      )
+    );
+  }
+
   function logTracks() {
     console.log('');
     console.log('Files:');
     console.log(files.map((dir) => dir.items.map((file) => file.name)));
     console.log('');
     console.log('MusicBrainz:');
-    console.log(mbData.discs);
+    logDiscs();
   }
 
   let trackDiff = false;
@@ -363,7 +385,7 @@ async function run() {
     dir.items.map((file, j) =>
       stringSimilarity.compareTwoStrings(
         file.name.toLowerCase().replace(/^\d+\.?\s*-?\s*/, ''),
-        mbData.discs[i][j].toLowerCase()
+        mbData.discs[i][j].title.toLowerCase()
       )
     )
   );
@@ -384,11 +406,13 @@ async function run() {
 
   console.log('Verify metadata:');
   console.log('');
-  console.log('Artist:', mbData.artist);
+  console.log('Artist:', multipleArtists ? 'Multiple Artists' : mbData.artist);
+  if (multipleArtists) console.log('Album Artist:', mbData.artist);
   console.log('Album:', mbData.release);
   console.log('Year:', mbData.year);
   console.log('Genres:', wikipediaData.genres);
-  console.log('Tracks:', mbData.discs);
+  console.log('Tracks:');
+  logDiscs();
 
   await askQuestion('All OK? ');
 
@@ -404,8 +428,11 @@ async function run() {
         disc.map(
           (track, j) => () =>
             setMeta(files[i].items[j].path, {
-              artist: mbData.artist,
-              title: track,
+              artist: multipleArtists
+                ? track.artists.join(', ')
+                : mbData.artist,
+              ...(multipleArtists ? { albumArtist: mbData.artist } : {}),
+              title: track.title,
               album: mbData.release,
               year: mbData.year,
               genre: wikipediaData.genres.join(', '),
@@ -432,7 +459,7 @@ async function run() {
               files[i].items[j].path,
               `${albumDest}/${discCount > 1 ? `${i + 1}-` : ''}${String(
                 j + 1
-              ).padStart(2, '0')} ${replaceSpecialChars(track)}.m4a`
+              ).padStart(2, '0')} ${replaceSpecialChars(track.title)}.m4a`
             )
         )
       )
