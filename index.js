@@ -42,6 +42,7 @@ const SPECIAL_WORDS = [
   'live',
   'sonar',
   'interlude',
+  'revision',
 ];
 
 async function askQuestion(query) {
