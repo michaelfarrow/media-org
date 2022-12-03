@@ -229,7 +229,11 @@ async function getWikidata(url) {
       },
     })
     .then((res) => {
-      return res.data?.entities?.[entity]?.sitelinks?.enwiki;
+      return (
+        res.data?.entities?.[entity]?.sitelinks?.enwiki ||
+        res.data?.entities?.[Object.keys(res.data?.entities)?.[0]]?.sitelinks
+          ?.enwiki
+      );
     });
 }
 
