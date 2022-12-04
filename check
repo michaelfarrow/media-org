@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TYPE="${1:-$TYPE}"
+TYPE="${1:-flac}"
 
 found_files=false
 
