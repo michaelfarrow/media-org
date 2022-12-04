@@ -349,6 +349,9 @@ async function run() {
   if (albumArtOversized) {
     console.log('Resizing album art');
     cover.resize(ALBUM_ART_RESIZE, ALBUM_ART_RESIZE, { fit: 'fill' });
+  } else if (coverMeta.width !== coverMeta.height) {
+    const minSize = Math.min(coverMeta.width, coverMeta.height);
+    cover.resize(minSize, minSize, { fit: 'fill' });
   }
 
   const mbData = await getMbData(mbUrl);
