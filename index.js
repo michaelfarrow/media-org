@@ -370,7 +370,7 @@ async function run() {
     console.log(
       mbData.discs.map((disc) =>
         disc.map(
-          (track) =>
+          (track, i) =>
             `${i + 1} ${track.title}${
               multipleArtists ? ` [${track.artists.join(', ')}]` : ''
             }`
