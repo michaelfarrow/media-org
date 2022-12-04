@@ -1,15 +1,17 @@
 #!/bin/bash
 
+TYPE="${1:-flac}"
+
 found_files=false
 
-for file in ./*.flac; do
+for file in ./*.$TYPE; do
 	[ -f "${file}" ] || continue
 	found_files=true
 	break;
 done
 
 if [ "${found_files}" = "true" ]; then
-	for f in ./*.flac; do
+	for f in ./*.$TYPE; do
 		file="$(basename "${f}")"
 		name="${file%.*}"
 		ffmpeg -y -i "$f" -map_metadata -1 -c:a libfdk_aac -c:v copy -b:a 320k -cutoff 20000 -vbr 0 -afterburner 1 "./${name}.m4a"
