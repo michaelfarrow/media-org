@@ -371,7 +371,7 @@ async function run() {
       mbData.discs.map((disc) =>
         disc.map(
           (track) =>
-            `${track.title}${
+            `${i + 1} ${track.title}${
               multipleArtists ? ` [${track.artists.join(', ')}]` : ''
             }`
         )
@@ -418,7 +418,9 @@ async function run() {
     console.log('Tracks do not look alike');
     console.log('');
     console.log('Similarity:');
-    console.log(trackSimilarity);
+    console.log(
+      trackSimilarity.map((disc) => disc.map((s, i) => `${i + 1} - ${s}`))
+    );
     logTracks();
     await askQuestion('Continue? ');
     console.log('Great, continuing...');
