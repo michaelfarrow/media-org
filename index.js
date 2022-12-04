@@ -1,7 +1,6 @@
 #!/bin/node
 
 const MusicBrainzApi = require('musicbrainz-api').MusicBrainzApi;
-const wiki = require('wikipedia');
 const { titleCase } = require('title-case');
 const _ = require('lodash');
 const cheerio = require('cheerio');
@@ -16,6 +15,7 @@ const sequence = require('promise-sequence');
 const fs = require('fs-extra');
 const sharp = require('sharp');
 const download = require('download');
+const infobox = require('infobox-parser');
 
 const mbApi = new MusicBrainzApi({
   appName: 'farrow-music-namer',
@@ -44,6 +44,19 @@ const SPECIAL_WORDS = [
   'interlude',
   'revision',
 ];
+
+const JSON_OPTIONS = {
+  headers: {
+    'Content-Type': 'application/json; charset=shift-jis',
+    'Access-Control-Allow-Origin': '*',
+    'accept-encoding': null,
+    proxy: false,
+    responseType: 'arraybuffer',
+    responseEncoding: 'binary',
+    gzip: true,
+    encoding: null,
+  },
+};
 
 async function askQuestion(query) {
   if (process.env.NAMER_AUTO === 'true') return Promise.resolve();
@@ -217,18 +230,10 @@ async function getWikidata(url) {
   const entity = url.match(/\/(Q\d+$)/)[1];
 
   return axios
-    .get(`https://www.wikidata.org/wiki/Special:EntityData/${entity}.json`, {
-      headers: {
-        'Content-Type': 'application/json; charset=shift-jis',
-        'Access-Control-Allow-Origin': '*',
-        'accept-encoding': null,
-        proxy: false,
-        responseType: 'arraybuffer',
-        responseEncoding: 'binary',
-        gzip: true,
-        encoding: null,
-      },
-    })
+    .get(
+      `https://www.wikidata.org/wiki/Special:EntityData/${entity}.json`,
+      JSON_OPTIONS
+    )
     .then((res) => {
       return (
         res.data?.entities?.[entity]?.sitelinks?.enwiki ||
@@ -238,13 +243,28 @@ async function getWikidata(url) {
     });
 }
 
+async function getInfoBox(title) {
+  return axios
+    .get(
+      `https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&titles=${encodeURIComponent(
+        title
+      ).replace(/\s/g, '_')}&rvsection=0`,
+      JSON_OPTIONS
+    )
+    .then((res) => {
+      const infoboxText = Object.values(res.data?.query?.pages || {})?.[0]
+        ?.revisions?.[0]?.['*'];
+      return infobox(infoboxText, {
+        removeSmall: true,
+        removeReferences: true,
+      });
+    });
+}
+
 async function getArtistGenres(artist) {
   try {
-    const page = await wiki.page(artist);
-
-    const infobox = await page.infobox();
-
-    return processGenres(infobox?.genre);
+    const infobox = await getInfoBox(artist);
+    return processGenres(infobox?.general?.genre);
   } catch (e) {
     console.error(e);
     return [];
@@ -253,72 +273,22 @@ async function getArtistGenres(artist) {
 
 async function getWikipediaData(title) {
   try {
-    const page = await wiki.page(title);
+    const infobox = await getInfoBox(title);
 
-    const infobox = await page.infobox();
-    const html = await page.html();
-
-    const albumTitle = infobox?.name;
-    const artist = infobox?.artist;
-
-    const genres = processGenres(infobox?.genre);
-    const artistGenres = await getArtistGenres(artist);
-    const released = infobox?.released?.date || infobox?.released;
-
-    const normalisedArtist = artist && artist.replace(/\s*\(band\)\s*$/i, '');
-    const normalisedAlbumTitle =
-      albumTitle && albumTitle.replace(/\s*\(album\)\s*$/i, '');
-
-    let year;
-
-    switch (typeof released) {
-      case 'string':
-        const foundYear = released.match(/\d{4}/);
-        if (foundYear) year = foundYear[0];
-        break;
-      case 'object':
-        const date = new Date(released);
-        if (date instanceof Date && !isNaN(date)) year = date.getFullYear();
-        break;
-    }
-
-    /*
-		console.log('Album:', normalisedAlbumTitle);
-		console.log('Artist:', normalisedArtist);
-		console.log('Genres:', genres, artistGenres);
-		console.log('Released:', year);
-
-		const $ = cheerio.load(html);
-		const $tables = $('table');
-
-		const discs = [];
-		let tracks = [];
-
-		$tables.each(function() {
-			$(this).find('tr').each(function() {
-				const rowText = $(this).text();
-				const length = rowText.match(/\d+:\d/);
-				const trackNumber = rowText.match(/^\s*(\d+)/)
-				let trackName = $(this).find('> *').eq(1).text().trim();
-
-				if ((trackName[0] === `'` && trackName[trackName.length - 1] === `'`) || (trackName[0] === `"` && trackName[trackName.length - 1] === `"`)) {
-					trackName = trackName.substring(1, trackName.length - 1);
-				}
-
-				if (trackNumber && length && Number(trackNumber[1]) === tracks.length + 1) {
-					tracks.push(trackName);
-				}
-			});
-		});
-
-		tracks.length && discs.push(tracks);
-		*/
+    const genres = processGenres(infobox?.general?.genre);
+    const artistGenres = await getArtistGenres(infobox?.general?.artist);
 
     return {
-      genres: genres.length ? genres : artistGenres,
+      genres:
+        genres && genres.length
+          ? genres
+          : artistGenres && artistGenres.length
+          ? artistGenres
+          : [],
     };
   } catch (e) {
     console.log(e);
+    return { genres: [] };
   }
 }
 

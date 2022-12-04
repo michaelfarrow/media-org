@@ -14,6 +14,7 @@
     "cheerio": "^1.0.0-rc.12",
     "download": "^8.0.0",
     "fs-extra": "^11.0.0",
+    "infobox-parser": "^3.6.2",
     "klaw": "^4.0.1",
     "lodash": "^4.17.21",
     "musicbrainz-api": "^0.10.1",
@@ -21,7 +22,6 @@
     "promise-sequence": "^1.0.0",
     "sharp": "^0.31.2",
     "string-similarity": "^4.0.4",
-    "title-case": "^3.0.3",
-    "wikipedia": "^1.1.9"
+    "title-case": "^3.0.3"
   }
 }
