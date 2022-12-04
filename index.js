@@ -136,7 +136,7 @@ async function getFiles() {
 }
 
 function replaceSpecialChars(str, dir) {
-  return dir ? str.replace(/[\/\.]/g, '_') : str.replace(/[\/]/g, '_');
+  return dir ? str.replace(/[\/\.\$]/g, '_') : str.replace(/[\/\$]/g, '_');
 }
 
 function processGenres(genres) {
