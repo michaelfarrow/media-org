@@ -87,10 +87,21 @@ async function setArt(name, dest) {
   if (!hasPrimary || !hasBackdrop) {
     const art = await getArt(name);
     if (art) {
-      !hasPrimary && art.primary && (await saveArt(art.primary, primaryPath));
-      !hasBackdrop &&
-        art.backdrop[0] &&
-        (await saveArt(art.backdrop[0], backdropPath));
+      if (!hasPrimary) {
+        if (art.primary) {
+          await saveArt(art.primary, primaryPath);
+        } else {
+          console.log('MISSING - primary', name);
+        }
+      }
+
+      if (!hasBackdrop) {
+        if (art.backdrop[0]) {
+          await saveArt(art.backdrop[0], backdropPath);
+        } else {
+          console.log('MISSING - backdrop', name);
+        }
+      }
     }
   } else {
     console.log(`OK ${name}`);
