@@ -151,7 +151,7 @@ function processGenres(genres) {
       break;
   }
 
-  return _.uniq(_genres.map((genre) => titleCase(genre)));
+  return _.uniq(_.flatten(_genres).map((genre) => titleCase(genre)));
 }
 
 function replaceStrangeChars(str) {
