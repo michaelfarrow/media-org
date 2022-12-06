@@ -48,6 +48,7 @@ const SPECIAL_WORDS = [
   'movie',
   'instrumental',
   'disco',
+  'replanned',
 ];
 
 const JSON_OPTIONS = {
