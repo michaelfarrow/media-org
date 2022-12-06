@@ -43,6 +43,7 @@ const SPECIAL_WORDS = [
   'sonar',
   'interlude',
   'revision',
+  'dialogue',
 ];
 
 const JSON_OPTIONS = {
@@ -89,7 +90,7 @@ function trackTitle(title) {
 
   SPECIAL_WORDS.forEach((word) => {
     _title = _title.replace(
-      new RegExp(`(\\(.*?)(?<![a-z])${word}(.*?\\))`, 'ig'),
+      new RegExp(`(\\(.*?)(?<![a-z])${word}(?![a-z])(.*?\\))`, 'ig'),
       '$1' + titleCase(word) + '$2'
     );
   });
