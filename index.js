@@ -254,6 +254,19 @@ async function getWikidata(url) {
     });
 }
 
+function matchGenres(str) {
+  const re = /\[\[.*?\]\]/g;
+  var m;
+  const genres = [];
+  do {
+    m = re.exec(str);
+    if (m) {
+      genres.push(m);
+    }
+  } while (m);
+  return genres.join(', ');
+}
+
 async function getInfoBox(title) {
   return axios
     .get(
@@ -266,13 +279,15 @@ async function getInfoBox(title) {
       let infoboxText = Object.values(res.data?.query?.pages || {})?.[0]
         ?.revisions?.[0]?.slots?.main?.['*'];
       infoboxText = infoboxText.replace(
-        /{{Flatlist\|([\s\S]*?)}}/gm,
+        /{{Flatlist\|([\s\S]*?)}}(?=\n)/gm,
         (match, group) => {
-          return group
-            .trim()
-            .split(/\n/g)
-            .map((i) => i.replace(/^\*/, ''))
-            .join(', ');
+          return matchGenres(group);
+        }
+      );
+      infoboxText = infoboxText.replace(
+        /{{hlist\|([\s\S]*?)}}(?=\n)/gm,
+        (match, group) => {
+          return matchGenres(group);
         }
       );
       return infobox(infoboxText, {
