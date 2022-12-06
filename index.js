@@ -46,6 +46,7 @@ const SPECIAL_WORDS = [
   'dialogue',
   'film',
   'movie',
+  'instrumental',
 ];
 
 const JSON_OPTIONS = {
