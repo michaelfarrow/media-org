@@ -258,8 +258,9 @@ function matchGenres(str) {
   const re = /\[\[.*?\]\]/g;
   var m;
   const genres = [];
+  const _str = str.replace(/{{[\s\S]*?}}/g, '');
   do {
-    m = re.exec(str);
+    m = re.exec(_str);
     if (m) {
       genres.push(m);
     }
