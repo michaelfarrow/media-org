@@ -180,6 +180,10 @@ async function getMbData(url) {
     group.relations.find((rel) => rel.type.toLowerCase() === 'wikidata') ||
     artist.relations.find((rel) => rel.type.toLowerCase() === 'wikidata');
 
+  const wikipediaRel =
+    group.relations.find((rel) => rel.type.toLowerCase() === 'wikipedia') ||
+    artist.relations.find((rel) => rel.type.toLowerCase() === 'wikipedia');
+
   const artistName = replaceStrangeChars(artist.name);
   const albumTitle = replaceStrangeChars(group.title);
   const discs = release.media
@@ -221,6 +225,7 @@ async function getMbData(url) {
     id: release.id,
     release: albumTitle,
     artist: artistName,
+    wikipedia: wikipediaRel?.url?.resource,
     wikidata: wikidataRel?.url?.resource,
     discs,
     year,
@@ -362,11 +367,16 @@ async function run() {
 
   let wikipediaData = { genres: [] };
 
-  if (mbData.wikidata) {
-    const wikidata = await getWikidata(mbData.wikidata);
+  if (mbData.wikidata || mbData.wikipedia) {
+    let wikidata;
 
-    if (wikidata?.title) {
-      wikipediaData = await getWikipediaData(wikidata.title);
+    if (mbData.wikidata && !mbData.wikipedia)
+      wikidata = await getWikidata(mbData.wikidata);
+
+    const title = wikidata?.title || mbData.wikipedia.split(/\//).pop();
+
+    if (title) {
+      wikipediaData = await getWikipediaData(title);
     }
   }
 
