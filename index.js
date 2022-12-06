@@ -44,6 +44,8 @@ const SPECIAL_WORDS = [
   'interlude',
   'revision',
   'dialogue',
+  'film',
+  'movie',
 ];
 
 const JSON_OPTIONS = {
