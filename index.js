@@ -356,9 +356,9 @@ async function run() {
   }
 
   const mbData = await getMbData(mbUrl);
-  const multipleArtists = _.flatten(mbData.discs).some(
-    (track) => track.artists.length > 1
-  );
+  const multipleArtists =
+    mbData.artist.toLowerCase() === 'various artists' ||
+    _.flatten(mbData.discs).some((track) => track.artists.length > 1);
 
   let wikipediaData = { genres: [] };
 
