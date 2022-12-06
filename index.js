@@ -254,12 +254,22 @@ async function getInfoBox(title) {
     .get(
       `https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&titles=${encodeURIComponent(
         title
-      ).replace(/\s/g, '_')}&rvslots=*`,
+      ).replace(/\s/g, '_')}&rvslots=main`,
       JSON_OPTIONS
     )
     .then((res) => {
-      const infoboxText = Object.values(res.data?.query?.pages || {})?.[0]
+      let infoboxText = Object.values(res.data?.query?.pages || {})?.[0]
         ?.revisions?.[0]?.slots?.main?.['*'];
+      infoboxText = infoboxText.replace(
+        /{{Flatlist\|([\s\S]*?)}}/gm,
+        (match, group) => {
+          return group
+            .trim()
+            .split(/\n/g)
+            .map((i) => i.replace(/^\*/, ''))
+            .join(', ');
+        }
+      );
       return infobox(infoboxText, {
         removeSmall: true,
         removeReferences: true,
@@ -280,7 +290,6 @@ async function getArtistGenres(artist) {
 async function getWikipediaData(title) {
   try {
     const infobox = await getInfoBox(title);
-
     const genres = processGenres(infobox?.general?.genre);
     const artistGenres = await getArtistGenres(infobox?.general?.artist);
 
