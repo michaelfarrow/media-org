@@ -387,7 +387,7 @@ async function run() {
     if (mbData.wikidata && !mbData.wikipedia)
       wikidata = await getWikidata(mbData.wikidata);
 
-    const title = wikidata?.title || mbData.wikipedia.split(/\//).pop();
+    const title = wikidata?.title || mbData.wikipedia?.split(/\//).pop();
 
     if (title) {
       wikipediaData = await getWikipediaData(title);
