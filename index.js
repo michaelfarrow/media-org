@@ -159,7 +159,7 @@ function processGenres(genres) {
 }
 
 function replaceStrangeChars(str) {
-  return str.replace(/’/g, "'").replace(/[‐‒]/g, '-');
+  return str.replace(/’/g, "'").replace(/[“”]/, '"').replace(/[‐‒]/g, '-');
 }
 
 async function getMbData(url) {
