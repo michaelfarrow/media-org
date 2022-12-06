@@ -254,12 +254,12 @@ async function getInfoBox(title) {
     .get(
       `https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&titles=${encodeURIComponent(
         title
-      ).replace(/\s/g, '_')}&rvsection=0`,
+      ).replace(/\s/g, '_')}&rvslots=*`,
       JSON_OPTIONS
     )
     .then((res) => {
       const infoboxText = Object.values(res.data?.query?.pages || {})?.[0]
-        ?.revisions?.[0]?.['*'];
+        ?.revisions?.[0]?.slots?.main?.['*'];
       return infobox(infoboxText, {
         removeSmall: true,
         removeReferences: true,
