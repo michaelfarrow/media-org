@@ -69,7 +69,7 @@ exports.default = async (inputFilePath, metadata, outputFilePath, options) => {
     addMetaData(args, 'description', metadata.description);
     addMetaData(args, 'synopsis', metadata.synopsis);
     addMetaData(args, 'title', metadata.title);
-    args.push(`"${ffmpegFileOutputPath}"`);
+    args.push(`"${ffmpegFileOutputPath.replace(/"/g, '\\"')}"`);
     if (opt.debug) {
         console.debug(`Running command ${ffmpeg_static_1.default} ${args.join(' ')}`);
     }

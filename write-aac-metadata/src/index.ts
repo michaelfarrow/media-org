@@ -102,7 +102,7 @@ export default async (
   addMetaData(args, 'synopsis', metadata.synopsis);
   addMetaData(args, 'title', metadata.title);
 
-  args.push(`"${ffmpegFileOutputPath}"`);
+  args.push(`"${ffmpegFileOutputPath.replace(/"/g, '\\"')}"`);
 
   if (opt.debug) {
     // eslint-disable-next-line no-console
