@@ -50,6 +50,7 @@ const SPECIAL_WORDS = [
   'disco',
   'replanned',
   'studio',
+  'reprise',
 ];
 
 const JSON_OPTIONS = {
