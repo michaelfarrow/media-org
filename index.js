@@ -278,9 +278,9 @@ function matchGenres(str) {
 async function getInfoBox(title, encode = false) {
   return axios
     .get(
-      `https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&titles=${encodeURIComponent(
-        title
-      ).replace(/\s/g, '_')}&rvslots=main&rvsection=0`,
+      `https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&titles=${
+        (encode && encodeURIComponent(title).replace(/\s/g, '_')) || title
+      }&rvslots=main&rvsection=0`,
       JSON_OPTIONS
     )
     .then((res) => {
