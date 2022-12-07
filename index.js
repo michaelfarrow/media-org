@@ -251,7 +251,10 @@ async function getWikidata(url) {
       return (
         res.data?.entities?.[entity]?.sitelinks?.enwiki ||
         res.data?.entities?.[Object.keys(res.data?.entities)?.[0]]?.sitelinks
-          ?.enwiki
+          ?.enwiki ||
+        res.data?.entities?.[entity]?.sitelinks?.simplewiki ||
+        res.data?.entities?.[Object.keys(res.data?.entities)?.[0]]?.sitelinks
+          ?.simplewiki
       );
     });
 }
