@@ -275,7 +275,7 @@ function matchGenres(str) {
   return genres.join(', ');
 }
 
-async function getInfoBox(title) {
+async function getInfoBox(title, encode = false) {
   return axios
     .get(
       `https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&titles=${encodeURIComponent(
@@ -319,7 +319,7 @@ async function getWikipediaData(title) {
   try {
     const infobox = await getInfoBox(title);
     const genres = processGenres(infobox?.general?.genre);
-    const artistGenres = await getArtistGenres(infobox?.general?.artist);
+    const artistGenres = await getArtistGenres(infobox?.general?.artist, true);
 
     return {
       genres:
