@@ -70,7 +70,7 @@ export default async (
     console.debug('Applied Options:', opt);
   }
 
-  args.push(`"${inputFilePath.replace(/"/g, '\\"')}"`);
+  args.push(`"${inputFilePath.replace(/"/g, '\\"').replace(/\$/g, '\\$')}"`);
 
   if (coverPicturePath) {
     args.push('-i', `"${coverPicturePath}"`);
@@ -102,7 +102,9 @@ export default async (
   addMetaData(args, 'synopsis', metadata.synopsis);
   addMetaData(args, 'title', metadata.title);
 
-  args.push(`"${ffmpegFileOutputPath.replace(/"/g, '\\"')}"`);
+  args.push(
+    `"${ffmpegFileOutputPath.replace(/"/g, '\\"').replace(/\$/g, '\\$')}"`
+  );
 
   if (opt.debug) {
     // eslint-disable-next-line no-console

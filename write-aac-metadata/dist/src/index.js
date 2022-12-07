@@ -43,7 +43,7 @@ exports.default = async (inputFilePath, metadata, outputFilePath, options) => {
         console.debug('metadata:', metadata);
         console.debug('Applied Options:', opt);
     }
-    args.push(`"${inputFilePath.replace(/"/g, '\\"')}"`);
+    args.push(`"${inputFilePath.replace(/"/g, '\\"').replace(/\$/g, '\\$')}"`);
     if (coverPicturePath) {
         args.push('-i', `"${coverPicturePath}"`);
     }
@@ -69,7 +69,7 @@ exports.default = async (inputFilePath, metadata, outputFilePath, options) => {
     addMetaData(args, 'description', metadata.description);
     addMetaData(args, 'synopsis', metadata.synopsis);
     addMetaData(args, 'title', metadata.title);
-    args.push(`"${ffmpegFileOutputPath.replace(/"/g, '\\"')}"`);
+    args.push(`"${ffmpegFileOutputPath.replace(/"/g, '\\"').replace(/\$/g, '\\$')}"`);
     if (opt.debug) {
         console.debug(`Running command ${ffmpeg_static_1.default} ${args.join(' ')}`);
     }
