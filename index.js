@@ -49,6 +49,7 @@ const SPECIAL_WORDS = [
   'instrumental',
   'disco',
   'replanned',
+  'studio',
 ];
 
 const JSON_OPTIONS = {
