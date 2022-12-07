@@ -275,12 +275,12 @@ function matchGenres(str) {
   return genres.join(', ');
 }
 
-async function getInfoBox(title, encode = false) {
+async function getInfoBox(title) {
   return axios
     .get(
-      `https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&titles=${
-        (encode && encodeURIComponent(title).replace(/\s/g, '_')) || title
-      }&rvslots=main&rvsection=0`,
+      `https://en.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&format=json&titles=${encodeURIComponent(
+        title
+      ).replace(/\s/g, '_')}&rvslots=main&rvsection=0`,
       JSON_OPTIONS
     )
     .then((res) => {
@@ -307,7 +307,7 @@ async function getInfoBox(title, encode = false) {
 
 async function getArtistGenres(artist) {
   try {
-    const infobox = await getInfoBox(artist, true);
+    const infobox = await getInfoBox(artist);
     return processGenres(infobox?.general?.genre);
   } catch (e) {
     console.error(e);
@@ -317,7 +317,7 @@ async function getArtistGenres(artist) {
 
 async function getWikipediaData(title) {
   try {
-    const infobox = await getInfoBox(title);
+    const infobox = await getInfoBox(decodeURIComponent(title));
     const genres = processGenres(infobox?.general?.genre);
     const artistGenres = await getArtistGenres(infobox?.general?.artist);
 
