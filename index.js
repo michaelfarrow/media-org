@@ -307,7 +307,7 @@ async function getInfoBox(title, encode = false) {
 
 async function getArtistGenres(artist) {
   try {
-    const infobox = await getInfoBox(artist);
+    const infobox = await getInfoBox(artist, true);
     return processGenres(infobox?.general?.genre);
   } catch (e) {
     console.error(e);
@@ -319,7 +319,7 @@ async function getWikipediaData(title) {
   try {
     const infobox = await getInfoBox(title);
     const genres = processGenres(infobox?.general?.genre);
-    const artistGenres = await getArtistGenres(infobox?.general?.artist, true);
+    const artistGenres = await getArtistGenres(infobox?.general?.artist);
 
     return {
       genres:
