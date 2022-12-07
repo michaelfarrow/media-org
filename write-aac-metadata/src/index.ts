@@ -70,7 +70,7 @@ export default async (
     console.debug('Applied Options:', opt);
   }
 
-  args.push(`"${inputFilePath.replace(/"/g, '\\"')}}"`);
+  args.push(`"${inputFilePath.replace(/"/g, '\\"')}"`);
 
   if (coverPicturePath) {
     args.push('-i', `"${coverPicturePath}"`);

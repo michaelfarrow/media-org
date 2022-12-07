@@ -43,7 +43,7 @@ exports.default = async (inputFilePath, metadata, outputFilePath, options) => {
         console.debug('metadata:', metadata);
         console.debug('Applied Options:', opt);
     }
-    args.push(`"${inputFilePath.replace(/"/g, '\\"')}}"`);
+    args.push(`"${inputFilePath.replace(/"/g, '\\"')}"`);
     if (coverPicturePath) {
         args.push('-i', `"${coverPicturePath}"`);
     }
