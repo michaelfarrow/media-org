@@ -51,6 +51,7 @@ const SPECIAL_WORDS = [
   'replanned',
   'studio',
   'reprise',
+  'piano',
 ];
 
 const JSON_OPTIONS = {
