@@ -52,6 +52,7 @@ const SPECIAL_WORDS = [
   'studio',
   'reprise',
   'piano',
+  'stripped',
 ];
 
 const JSON_OPTIONS = {
