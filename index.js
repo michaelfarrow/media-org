@@ -56,6 +56,7 @@ const SPECIAL_WORDS = [
   'alternate',
   'voice',
   'electrique',
+  'soundtrack',
 ];
 
 const JSON_OPTIONS = {
