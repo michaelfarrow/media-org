@@ -169,7 +169,7 @@ function processGenres(genres) {
     _.flatten(_genres).map((genre) => {
       // strange edge case https://musicbrainz.org/release/60a04a88-3956-49f5-9d0f-b2603be9f612
       const _genreSplit = genre.split(/#/g);
-      titleCase(_genreSplit[_genreSplit.length - 1]);
+      return titleCase(_genreSplit[_genreSplit.length - 1]);
     })
   );
 }
