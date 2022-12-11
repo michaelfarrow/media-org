@@ -327,11 +327,13 @@ async function getArtistGenres(artist) {
   }
 }
 
-async function getWikipediaData(title) {
+async function getWikipediaData(title, artist) {
   try {
     const infobox = await getInfoBox(decodeURIComponent(title));
     const genres = processGenres(infobox?.general?.genre);
-    const artistGenres = await getArtistGenres(infobox?.general?.artist);
+    const artistGenres = await getArtistGenres(
+      infobox?.general?.artist || artist
+    );
 
     return {
       genres:
@@ -425,7 +427,7 @@ async function run() {
     const title = wikidata?.title || mbData.wikipedia?.split(/wiki\//).pop();
 
     if (title) {
-      wikipediaData = await getWikipediaData(title);
+      wikipediaData = await getWikipediaData(title, mbData.artist);
     }
   }
 
