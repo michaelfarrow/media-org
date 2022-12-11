@@ -299,13 +299,13 @@ async function getInfoBox(title) {
       let infoboxText = Object.values(res.data?.query?.pages || {})?.[0]
         ?.revisions?.[0]?.slots?.main?.['*'];
       infoboxText = infoboxText.replace(
-        /{{Flatlist\|([\s\S]*?)}}(?=\n)/gm,
+        /(?<=genre\s*=\s*){{flatlist\|([\s\S]*?)}}(?=\n)/gim,
         (match, group) => {
           return matchGenres(group);
         }
       );
       infoboxText = infoboxText.replace(
-        /{{hlist\|([\s\S]*?)}}(?=\n)/gm,
+        /(?<=genre\s*=\s*){{hlist\|([\s\S]*?)}}(?=\n)/gim,
         (match, group) => {
           return matchGenres(group);
         }
