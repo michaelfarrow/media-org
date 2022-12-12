@@ -59,6 +59,7 @@ const SPECIAL_WORDS = [
   'soundtrack',
   'sessions',
   'early',
+  'duet',
 ];
 
 const JSON_OPTIONS = {
