@@ -298,16 +298,17 @@ async function getInfoBox(title) {
     .then((res) => {
       let infoboxText = Object.values(res.data?.query?.pages || {})?.[0]
         ?.revisions?.[0]?.slots?.main?.['*'];
+      infoboxText = infoboxText.replace(/<!--[\s\S]*?-->/g, '');
       infoboxText = infoboxText.replace(
-        /(?<=genre\s*=\s*){{flatlist\|([\s\S]*?)}}(?=\n)/gim,
+        /genre\s*=\s*{{flatlist\|([\s\S]*?)}}(?=\n)/gim,
         (match, group) => {
-          return matchGenres(group);
+          return `genre = ${matchGenres(group)}`;
         }
       );
       infoboxText = infoboxText.replace(
-        /(?<=genre\s*=\s*){{hlist\|([\s\S]*?)}}(?=\n)/gim,
+        /genre\s*=\s*{{hlist\|([\s\S]*?)}}(?=\n)/gim,
         (match, group) => {
-          return matchGenres(group);
+          return `genre = ${matchGenres(group)}`;
         }
       );
       return infobox(infoboxText, {
