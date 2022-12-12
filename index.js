@@ -60,6 +60,7 @@ const SPECIAL_WORDS = [
   'sessions',
   'early',
   'duet',
+  'guitar',
 ];
 
 const JSON_OPTIONS = {
