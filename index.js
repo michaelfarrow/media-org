@@ -305,6 +305,7 @@ async function getInfoBox(title) {
       let infoboxText = Object.values(res.data?.query?.pages || {})?.[0]
         ?.revisions?.[0]?.slots?.main?.['*'];
       infoboxText = infoboxText.replace(/<!--[\s\S]*?-->/g, '');
+      infoboxText = infoboxText.replace(/^\*\s*{{.*?$/gm, '');
       infoboxText = infoboxText.replace(
         /genre\s*=\s*{{flatlist\|([\s\S]*?)}}(?=\n)/gim,
         (match, group) => {
