@@ -257,7 +257,7 @@ async function getMbData(url) {
       : artist.genres && artist.genres.length
       ? artist.genres
       : []
-    ).map((genre) => titleCase(genre.name.trim()))
+    ).map((genre) => genre.name.trim())
   );
 
   return {
