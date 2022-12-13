@@ -201,7 +201,7 @@ async function getMbData(url) {
   const artist = await mbApi.lookupEntity(
     'artist',
     release['artist-credit'][0].artist.id,
-    ['url-rels']
+    ['genres', 'url-rels']
   );
 
   const wikidataRel =
@@ -252,7 +252,9 @@ async function getMbData(url) {
 
   const year = group['first-release-date'].match(/^\d{4}/)[0];
   const genres = _.uniq(
-    (group.genres || []).map((genre) => titleCase(genre.name.trim()))
+    (group.genres || artist.genres || []).map((genre) =>
+      titleCase(genre.name.trim())
+    )
   );
 
   return {
