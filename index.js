@@ -314,18 +314,18 @@ async function getInfoBox(title) {
           return `genre = ${matchGenres(group)}`;
         }
       );
-      infoboxText = infoboxText.replace(
-        /genre\s*=\s*{{hlist\|([\s\S]*?)}}(?=\n)/gim,
-        (match, group) => {
-          return `genre = ${matchGenres(
-            group
-              .split(/(?<=\])\s*\|/g)
-              .map((item) => item.trim())
-              .filter((item) => item.match(/^\[\[/))
-              .join(',')
-          )}`;
-        }
-      );
+      // infoboxText = infoboxText.replace(
+      //   /genre\s*=\s*{{hlist\|([\s\S]*?)}}(?=\n)/gim,
+      //   (match, group) => {
+      //     return `genre = ${matchGenres(
+      //       group
+      //         .split(/(?<=\])\s*\|/g)
+      //         .map((item) => item.trim())
+      //         .filter((item) => item.match(/^\[\[/))
+      //         .join(',')
+      //     )}`;
+      //   }
+      // );
       return infobox(infoboxText, {
         removeSmall: true,
         removeReferences: true,
