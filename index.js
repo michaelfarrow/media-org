@@ -195,7 +195,7 @@ async function getMbData(url) {
   const group = await mbApi.lookupEntity(
     'release-group',
     release['release-group'].id,
-    ['url-rels']
+    ['genres', 'url-rels']
   );
   const artist = await mbApi.lookupEntity(
     'artist',
@@ -248,7 +248,11 @@ async function getMbData(url) {
 	*/
       })
     );
+
   const year = group['first-release-date'].match(/^\d{4}/)[0];
+  const genres = (group.genres || []).map((genre) =>
+    titleCase(genre.name.trim())
+  );
 
   return {
     id: release.id,
@@ -258,6 +262,7 @@ async function getMbData(url) {
     wikidata: wikidataRel?.url?.resource,
     discs,
     year,
+    genres,
   };
 }
 
@@ -432,6 +437,7 @@ async function run() {
     mbData.artist.toLowerCase() === 'various artists' ||
     _.flatten(mbData.discs).some((track) => track.artists.length > 1);
 
+  /*
   let wikipediaData = { genres: [] };
 
   if (mbData.wikidata || mbData.wikipedia) {
@@ -446,6 +452,7 @@ async function run() {
       wikipediaData = await getWikipediaData(title, mbData.artist);
     }
   }
+  */
 
   function logDiscs() {
     console.log(
@@ -513,7 +520,7 @@ async function run() {
   if (multipleArtists) console.log('Album Artist:', mbData.artist);
   console.log('Album:', mbData.release);
   console.log('Year:', mbData.year);
-  console.log('Genres:', wikipediaData.genres);
+  console.log('Genres:', mbData.genres);
   console.log('Tracks:');
   logDiscs();
 
@@ -536,7 +543,7 @@ async function run() {
               title: track.title,
               album: mbData.release,
               year: mbData.year,
-              genre: wikipediaData.genres.join(', '),
+              genre: mbData.genres.join(', '),
               track: j + 1,
               ...(discCount > 1 ? { disc: i + 1 } : {}),
               coverPicturePath: 'cover.embed.jpg',
