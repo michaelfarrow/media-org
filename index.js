@@ -251,8 +251,8 @@ async function getMbData(url) {
     );
 
   const year = group['first-release-date'].match(/^\d{4}/)[0];
-  const genres = (group.genres || []).map((genre) =>
-    titleCase(genre.name.trim())
+  const genres = _.uniq(
+    (group.genres || []).map((genre) => titleCase(genre.name.trim()))
   );
 
   return {
