@@ -257,6 +257,7 @@ async function getMbData(url) {
 
   return {
     id: release.id,
+    artistId: artist.id,
     release: albumTitle,
     artist: artistName,
     wikipedia: wikipediaRel?.url?.resource,
@@ -554,10 +555,12 @@ async function run() {
     )
   );
 
-  const albumDest = `${DEST}/${replaceSpecialChars(
-    mbData.artist,
+  const artistDest = `${DEST}/${replaceSpecialChars(mbData.artist, true)}`;
+
+  const albumDest = `${artistDest}/${replaceSpecialChars(
+    mbData.release,
     true
-  )}/${replaceSpecialChars(mbData.release, true)}`;
+  )}`;
 
   await sequence(
     _.flatten(
@@ -585,6 +588,9 @@ async function run() {
 
   console.log('Saving mbid', `${albumDest}/mbid`);
   await fs.writeFile(`${albumDest}/mbid`, mbData.id, 'utf-8');
+
+  console.log('Saving artist mbid', `${artistDest}/mbid`);
+  await fs.writeFile(`${artistDest}/mbid`, mbData.artistId, 'utf-8');
 }
 
 run();
