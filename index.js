@@ -29,40 +29,6 @@ const albumArtUrl = process.argv[3];
 const DEST = '/opt/media/music';
 const SIMILARITY_WARNING = 0.9;
 const ALBUM_ART_RESIZE = 1417;
-const SPECIAL_WORDS = [
-  'remix',
-  'mix',
-  'extended',
-  'original',
-  'demo',
-  'version',
-  'edit',
-  'refix',
-  'acoustic',
-  'live',
-  'sonar',
-  'interlude',
-  'revision',
-  'dialogue',
-  'film',
-  'movie',
-  'instrumental',
-  'disco',
-  'replanned',
-  'studio',
-  'reprise',
-  'piano',
-  'stripped',
-  'alternate',
-  'voice',
-  'electrique',
-  'soundtrack',
-  'sessions',
-  'early',
-  'duet',
-  'guitar',
-  'vocal',
-];
 
 const JSON_OPTIONS = {
   headers: {
@@ -101,19 +67,6 @@ async function setMeta(file, data) {
 async function copyFile(src, dest) {
   console.log('Copying file', dest);
   return fs.copy(src, dest);
-}
-
-function trackTitle(title) {
-  let _title = title;
-
-  SPECIAL_WORDS.forEach((word) => {
-    _title = _title.replace(
-      new RegExp(`(\\(.*?)(?<![a-z])${word}(?![a-z])(.*?\\))`, 'ig'),
-      '$1' + titleCase(word) + '$2'
-    );
-  });
-
-  return _title;
 }
 
 async function getFiles() {
@@ -238,7 +191,7 @@ async function getMbData(url) {
             if (name === '[no artist]') name = '';
             return replaceStrangeChars(name);
           }),
-          title: trackTitle(replaceStrangeChars(track.title)),
+          title: replaceStrangeChars(track.title),
         };
         /*
 	title: trackTitle(
