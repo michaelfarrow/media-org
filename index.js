@@ -319,7 +319,7 @@ async function getInfoBox(title) {
         (match, group) => {
           return `genre = ${matchGenres(
             group
-              .split(/\|/g)
+              .split(/(?<=\])\s*\|/g)
               .map((item) => item.trim())
               .filter((item) => item.match(/^\[\[/))
               .join(',')
