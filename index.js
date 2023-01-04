@@ -422,7 +422,7 @@ async function run() {
         disc.map(
           (track, i) =>
             `${i + 1} ${track.title}${
-              multipleArtists ? ` [${track.artists.join(', ')}]` : ''
+              track.artists.length > 1 ? ` [${track.artists.join(', ')}]` : ''
             }`
         )
       )
