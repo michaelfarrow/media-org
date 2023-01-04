@@ -151,9 +151,11 @@ async function getMbData(url) {
     release['release-group'].id,
     ['genres', 'url-rels']
   );
+
   const artist = await mbApi.lookupEntity(
     'artist',
-    release['artist-credit'][0].artist.id,
+    release['artist-credit'].find((artist) => artist.joinphrase === '')?.artist
+      .id || release['artist-credit'][0].artist.id,
     ['genres', 'url-rels']
   );
 
