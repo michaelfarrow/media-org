@@ -219,6 +219,7 @@ async function getMbData(url) {
     id: release.id,
     artistId: artist.id,
     release: albumTitle,
+    disambiguation: group.disambiguation || '',
     artist: artistName,
     wikipedia: wikipediaRel?.url?.resource,
     wikidata: wikidataRel?.url?.resource,
@@ -518,7 +519,9 @@ async function run() {
   const artistDest = `${DEST}/${replaceSpecialChars(mbData.artist, true)}`;
 
   const albumDest = `${artistDest}/${replaceSpecialChars(
-    mbData.release,
+    `${mbData.release}${
+      mbData.disambiguation.length ? ` (${mbData.disambiguation})` : ''
+    }`,
     true
   )}`;
 
