@@ -168,7 +168,7 @@ async function getMbData(url) {
     artist.relations.find((rel) => rel.type.toLowerCase() === 'wikipedia');
 
   const artistName = replaceStrangeChars(artist.name);
-  const albumTitle = replaceStrangeChars(group.title);
+  const albumTitle = replaceStrangeChars(release.title);
   const discs = release.media
     .filter(
       (media) =>
