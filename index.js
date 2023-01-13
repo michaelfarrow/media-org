@@ -1,6 +1,5 @@
 #!/bin/node
 
-const MusicBrainzApi = require('musicbrainz-api').MusicBrainzApi;
 const { titleCase } = require('title-case');
 const _ = require('lodash');
 const cheerio = require('cheerio');
@@ -17,11 +16,7 @@ const sharp = require('sharp');
 const download = require('download');
 const infobox = require('infobox-parser');
 
-const mbApi = new MusicBrainzApi({
-  appName: 'farrow-music-namer',
-  appVersion: '0.1.0',
-  appContactInfo: 'mike@farrow.io',
-});
+const mbApi = require('./musicbrainz');
 
 let mbUrl = process.argv[2];
 const albumArtUrl = process.argv[3];
