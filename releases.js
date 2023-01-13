@@ -37,7 +37,12 @@ async function getMbId(rootDir) {
 async function run() {
   const artists = await getDirectories();
 
+  let done = 0;
   for (const artist of artists) {
+    done++;
+
+    console.log('Artist', done, 'of', artists.length);
+
     if (artist.name === 'Various Artists') continue;
 
     const artistMbId = await getMbId(artist.path);
