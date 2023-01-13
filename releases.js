@@ -81,7 +81,8 @@ async function run() {
         const missingArtistReleaseGroups = artistReleaseGroups.filter(
           (rg) =>
             !releaseGroups.includes(rg.id) &&
-            !rg['secondary-types'].includes('Live')
+            !(rg['secondary-types'] || []).length &&
+            !(rg['secondary-type-ids'] || []).length
         );
 
         if (missingArtistReleaseGroups.length) {
