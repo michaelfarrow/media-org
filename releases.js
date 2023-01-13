@@ -82,7 +82,8 @@ async function run() {
           (rg) =>
             !releaseGroups.includes(rg.id) &&
             !(rg['secondary-types'] || []).length &&
-            !(rg['secondary-type-ids'] || []).length
+            !(rg['secondary-type-ids'] || []).length &&
+            (rg['first-release-date'] || '').length
         );
 
         if (missingArtistReleaseGroups.length) {
