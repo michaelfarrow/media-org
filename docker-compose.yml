@@ -1,0 +1,17 @@
+services:
+  temp:
+    container_name: music-org-temp
+    build: .
+    volumes:
+      - ./src:/app
+      - ./.media:/media
+    stdin_open: true
+    tty: true
+  app:
+    container_name: music-org-app
+    build: .
+    volumes:
+      - ./src:/app
+      - ./.media:/media
+    stdin_open: true
+    tty: true

@@ -1,8 +1,7 @@
-import { ChildProcess, spawn } from 'child_process';
-import ffmpegPath from 'ffmpeg-static';
-import Options from './Options';
+import { type ChildProcess, spawn } from 'child_process';
+import type Options from './Options';
 import DefaultOptions from './DefaultOptions';
-import Metadata from './Metadata';
+import type Metadata from './Metadata';
 import { v4 as uuid } from 'uuid';
 import path from 'path';
 import fs from 'fs';
@@ -26,6 +25,8 @@ export default async (
   const coverPicturePath = metadata.coverPicturePath
     ? metadata.coverPicturePath
     : '';
+  //Appears to be some issue with the type definition of ffmepgStatic so I have to do the below until that's fixed
+  const ffmpegPath = '/usr/bin/ffmpeg';
   let ffmpegFileOutputPath = outputFilePath ?? '';
 
   if (!fs.existsSync(inputFilePath)) {
@@ -74,17 +75,17 @@ export default async (
 
   if (coverPicturePath) {
     args.push('-i', `"${coverPicturePath}"`);
-  }
-
-  if (coverPicturePath) {
     args.push('-map', '0:0');
     args.push('-map', '1');
+    args.push('-disposition:v:0', 'attached_pic');
+  } else {
+    args.push('-map', '0:a');
   }
 
-  args.push('-c', 'copy');
+  args.push('-c:a', 'copy');
 
-  if (coverPicturePath) {
-    args.push('-disposition:v:0', 'attached_pic');
+  if (options?.clear) {
+    args.push('-map_metadata', '-1');
   }
 
   addMetaData(args, 'album', metadata.album);
@@ -135,11 +136,11 @@ export default async (
     console.debug(
       `Setting ${ffmpegFileOutputPath} creation date: ${new Date(
         btime
-      )} (${btime}), accessed date: ${new Date(
+      ).toDateString()} (${btime}), accessed date: ${new Date(
         atime
-      )} (${atime}), modified date: ${new Date(
+      ).toDateString()} (${atime}), modified date: ${new Date(
         atime
-      )} (${atime}) so it matches with the original file`
+      ).toDateString()} (${atime}) so it matches with the original file`
     );
   }
 
