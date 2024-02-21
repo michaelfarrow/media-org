@@ -1,6 +1,8 @@
 import readline from 'readline';
 
-export async function question(message: string): Promise<string> {
+const AUTO_CONFIRM = process.env.AUTO_CONFIRM?.toLowerCase() === 'true';
+
+async function question(message: string): Promise<string> {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -15,5 +17,12 @@ export async function question(message: string): Promise<string> {
 }
 
 export async function confirm(message: string) {
-  return (await question(`${message} (Y) `)).toLowerCase().trim() !== 'n';
+  if (AUTO_CONFIRM) return true;
+  return (await question(`${message} (Y)`)).toLowerCase().trim() !== 'n';
+}
+
+export function input(message: string) {
+  if (AUTO_CONFIRM)
+    throw new Error('Cannot use auto confirm when user input is required.');
+  return question(message);
 }

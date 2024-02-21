@@ -1,10 +1,10 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { type Dir, type File, getDirs, getFileTypes  } from './lib/fs';
+import { type Dir, type File, getDirs, getFileTypes } from './lib/fs';
 import { dirName, fileName } from './lib/namer';
 import writeTags from './lib/write-aac-metadata';
 import { confirm } from './lib/ui';
-import ffmpeg, { type FfprobeData } from 'fluent-ffmpeg';
+import { audioFileBitDepth } from './lib/audio';
 
 import {
   MUSIC_LOSSESS_DIR,
@@ -12,7 +12,12 @@ import {
   MUSIC_COMPRESSED_DIR,
 } from './lib/config';
 
-const COPY_FILES = [
+let total = 0;
+let duds = 0;
+
+const COPY_FILES_ARTIST = ['backdrop.jpg', 'poster.jpg', 'mbid'];
+
+const COPY_FILES_ALBUM = [
   'cover.full.jpg',
   'cover.undersized.jpg',
   'cover.jpg',
@@ -32,9 +37,6 @@ type Track = File;
 type AlbumWithTracks = Album & {
   tracks: Track[];
 };
-
-let total = 0;
-let duds = 0;
 
 function normalise(str: string) {
   return str
@@ -63,16 +65,7 @@ function normaliseTracks(items: Track[]) {
 }
 
 function getAudioFiles(dir: string): Promise<Track[]> {
-  return getFileTypes(dir, 'm4a')
-}
-
-function probe(file: string): Promise<FfprobeData> {
-  return new Promise((resolve, reject) => {
-    ffmpeg(file).ffprobe((err, data) => {
-      if (err) return reject(err);
-      resolve(data);
-    });
-  });
+  return getFileTypes(dir, 'm4a');
 }
 
 async function trackCountsMatch(tracks: Track[], losslessTracks: Track[]) {
@@ -82,13 +75,7 @@ async function trackCountsMatch(tracks: Track[], losslessTracks: Track[]) {
 async function trackBitDepthsValid(tracks: Track[]) {
   let pass = true;
   for (const track of tracks) {
-    const info = await probe(track.path);
-    if (
-      String(
-        info.streams.find((stream) => stream.codec_type === 'audio')
-          ?.bits_per_raw_sample
-      ) !== '16'
-    ) {
+    if ((await audioFileBitDepth(track.path)) === 16) {
       pass = false;
       break;
     }
@@ -120,33 +107,35 @@ async function diffTrackNames(tracks: Track[], losslessTracks: Track[]) {
   return false;
 }
 
-function convertToFlac(track: Track, dest: string) {
-  return new Promise((resolve, reject) => {
-    ffmpeg(track.path)
-      .audioCodec('flac')
-      .on('error', function (err) {
-        reject(err);
-      })
-      .on('end', resolve)
-      .save(`${dest.replace(/\.[^/.]+$/g, '')}.flac`);
-  });
-}
+// function convertToFlac(track: Track, dest: string) {
+//   return new Promise((resolve, reject) => {
+//     ffmpeg(track.path)
+//       .audioCodec('flac')
+//       .on('error', function (err) {
+//         reject(err);
+//       })
+//       .on('end', resolve)
+//       .save(`${dest.replace(/\.[^/.]+$/g, '')}.flac`);
+//   });
+// }
 
 async function processAlbum(album: Album) {
-  const nameParts = [dirName(album.artist.name), dirName(album.name)];
+  total++;
 
-  const destDir = path.resolve(MUSIC_LOSSESS_NEW_DIR, ...nameParts);
-  const losslessDir = path.resolve(MUSIC_LOSSESS_DIR, ...nameParts);
+  const namePartsArtist = [dirName(album.artist.name)];
+  const namePartsFull = [dirName(album.artist.name), dirName(album.name)];
+
+  const destDir = path.resolve(MUSIC_LOSSESS_NEW_DIR, ...namePartsFull);
+  const losslessDir = path.resolve(MUSIC_LOSSESS_DIR, ...namePartsFull);
 
   const tracks = await getAudioFiles(album.path);
+
   const destTracks =
     ((await fs.exists(destDir)) && (await getAudioFiles(destDir))) || [];
 
   if (destTracks.length == tracks.length) {
     return;
   }
-
-  total++;
 
   console.log('');
   console.log('Processing', album);
@@ -159,17 +148,22 @@ async function processAlbum(album: Album) {
     const losslessTracks = await getAudioFiles(losslessDir);
 
     if (!(await trackCountsMatch(tracks, losslessTracks))) {
+      duds++;
       return console.log('Mismatched track counts');
     }
 
     if (!(await trackBitDepthsValid(losslessTracks))) {
+      duds++;
       return console.log('Invalid bit depth');
     }
 
     const diff = await diffTrackNames(tracks, losslessTracks);
 
     if (diff) {
-      console.log('Track names different');
+      const diffCount = diff.failedFiltered.length;
+      console.log(
+        `${diffCount} track name${diffCount !== 1 ? 's' : ''} different`
+      );
       console.log(diff.failedFiltered);
       valid = false;
       // valid = await confirm('Valid?');
@@ -185,7 +179,7 @@ async function processAlbum(album: Album) {
         const src = losslessTrack.path;
         const dest = path.resolve(
           MUSIC_LOSSESS_NEW_DIR,
-          ...nameParts,
+          ...namePartsFull,
           fileName(track.name)
         );
 
@@ -199,39 +193,38 @@ async function processAlbum(album: Album) {
         });
       }
 
-      for (const copyFile of COPY_FILES) {
+      for (const copyFile of COPY_FILES_ALBUM) {
         const src = path.resolve(album.path, copyFile);
         const dest = path.resolve(
           MUSIC_LOSSESS_NEW_DIR,
-          ...nameParts,
+          ...namePartsFull,
           copyFile
         );
         if (await fs.exists(src)) {
-          console.log('Converting', src, '>', dest);
+          console.log('Copying', src, '>', dest);
           await fs.copyFile(src, dest);
         }
       }
+
+      for (const copyFile of COPY_FILES_ARTIST) {
+        const src = path.resolve(album.artist.path, copyFile);
+        const dest = path.resolve(
+          MUSIC_LOSSESS_NEW_DIR,
+          ...namePartsArtist,
+          copyFile
+        );
+        if ((await fs.exists(src)) && !(await fs.exists(dest))) {
+          console.log('Copying', src, '>', dest);
+          await fs.copyFile(src, dest);
+        }
+      }
+    } else {
+      duds++;
     }
   } else {
-    console.log('Missing');
+    duds++;
+    console.log('Missing', losslessDir);
   }
-
-  // if (!losslessExists) {
-  //   console.log(losslessPath);
-  //   console.log('DNE');
-  //   duds++;
-  // }
-
-  // const tracks = await getFiles(album.path, (item) =>
-  //   item.path.endsWith('.m4a')
-  // );
-
-  // const albumWithTracks: AlbumWithTracks = {
-  //   ...album,
-  //   tracks,
-  // };
-
-  // return albumWithTracks;
 }
 
 async function processArtist(artist: Artist) {
@@ -253,7 +246,7 @@ async function processArtists() {
 
 async function main() {
   await processArtists();
-  console.log(duds, total);
+  console.log(`${duds}/${total} remaining`);
 
   // console.log(
   //   normalise(

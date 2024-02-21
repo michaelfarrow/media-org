@@ -1,9 +1,23 @@
-FROM node:20.11.1
+FROM jrottenberg/ffmpeg:4.4-ubuntu as ffmpeg
+# FROM node:20.11.1 as build
 
-RUN apt-get update
-RUN apt-get install -y ffmpeg
+# WORKDIR /app
+# COPY package*.json ./
+# RUN npm install
 
-USER node
+FROM node:20.11.1 as app
+
 WORKDIR /app
+
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
+COPY --from=ffmpeg /usr/local /usr/local/
+# COPY --from=ffmpeg /usr/lib/*-linux-gnu/* /usr/lib/
+COPY --from=ffmpeg /lib/*-linux-gnu/* /usr/lib/
+
+# COPY --from=build /app/node_modules ./node_modules
+
+RUN chown node:node /app
+USER node
 
 ENTRYPOINT bash
