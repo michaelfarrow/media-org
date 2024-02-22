@@ -1,21 +1,26 @@
 import processUpdate from './shared/process-update';
-
+import compress from './compress';
 import path from 'path';
 import fs from 'fs-extra';
+import { RELEASE_FILE } from '@/lib/config';
 import { Release } from '@/lib/namer';
 import { confirm } from '@/lib/ui';
 
 // Warn if anything is to be overriden
 // Move / rename items if required
 
-export default async function update(src: string, dest: string) {
-  const releaseFile = path.resolve(src, 'release.json');
+export default async function update(
+  src: string,
+  destLossless: string,
+  destCompressed: string
+) {
+  const releaseFile = path.resolve(src, RELEASE_FILE);
   const releaseExisting = Release.parse(await fs.readJson(releaseFile));
 
   if (!(await fs.exists(releaseFile)))
     throw new Error(`Release file does not exist: ${releaseFile}`);
 
-  return processUpdate(src, dest, {
+  const releaseRes = await processUpdate(src, destLossless, {
     mbId: releaseExisting.id,
     releaseExts: ['m4a'],
     async processTrack(track, dest) {
@@ -33,4 +38,6 @@ export default async function update(src: string, dest: string) {
       }
     },
   });
+
+  if (releaseRes) return await compress(src, destCompressed);
 }

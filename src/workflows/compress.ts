@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { getFileTypes } from '@/lib/fs';
+import { RELEASE_FILE, COVER_FILE } from '@/lib/config';
+import { type File, getFileTypes } from '@/lib/fs';
 import { confirm } from '@/lib/ui';
 import { Release, releasePath, trackFileName } from '@/lib/namer';
 import { convertToM4a } from '@/lib/audio';
@@ -8,43 +9,14 @@ import { convertToM4a } from '@/lib/audio';
 // Warn if anything is to be overriden
 // Move / rename items if required
 
-export default async function compress(src: string, dest: string) {
-  const coverFile = path.resolve(src, 'cover.jpg');
-  const releaseFile = path.resolve(src, 'release.json');
-
-  if (!(await fs.exists(src)))
-    throw new Error(`Source directory does not exist: ${src}`);
-
-  if (!(await fs.exists(releaseFile)))
-    throw new Error(`Release file does not exist: ${releaseFile}`);
-
-  if (!(await fs.exists(coverFile)))
-    throw new Error(`Cover file does not exist: ${coverFile}`);
-
-  const release = Release.parse(await fs.readJson(releaseFile));
-
-  const releaseDest = path.resolve(dest, releasePath(release));
-
-  const files = await getFileTypes(src, 'm4a', { sort: 'asc' });
+async function processTracks(
+  files: File[],
+  release: Release,
+  releaseDest: string,
+  coverFile: string
+) {
   const discs = release.discs;
   const discCount = discs.length;
-  const trackCount = discs.flat().length;
-
-  if (trackCount !== files.length)
-    throw new Error('File/track length mismatch');
-
-  if (await fs.exists(releaseDest)) {
-    if (
-      !(await confirm(
-        `Destination already exists (${releaseDest}), erase/overwrite?`
-      ))
-    ) {
-      return false;
-    }
-    await fs.remove(releaseDest);
-  }
-
-  await fs.ensureDir(releaseDest);
 
   for (var discNumber = 0; discNumber < discs.length; discNumber++) {
     const disc = discs[discNumber];
@@ -70,12 +42,50 @@ export default async function compress(src: string, dest: string) {
           title: track.title,
           album: release.title,
           date: release.year,
-          // genre: release.genres.join(', '),
           track: trackNumber + 1,
           disc: discCount > 1 ? discNumber + 1 : undefined,
-          // coverPicturePath: 'cover.embed.jpg',
         },
       });
     }
   }
+}
+
+export default async function compress(src: string, dest: string) {
+  const coverFile = path.resolve(src, COVER_FILE);
+  const releaseFile = path.resolve(src, RELEASE_FILE);
+
+  if (!(await fs.exists(src)))
+    throw new Error(`Source directory does not exist: ${src}`);
+
+  if (!(await fs.exists(releaseFile)))
+    throw new Error(`Release file does not exist: ${releaseFile}`);
+
+  if (!(await fs.exists(coverFile)))
+    throw new Error(`Cover file does not exist: ${coverFile}`);
+
+  const release = Release.parse(await fs.readJson(releaseFile));
+  const releaseDest = path.resolve(dest, releasePath(release));
+
+  const files = await getFileTypes(src, 'm4a', { sort: 'asc' });
+  const discs = release.discs;
+  const trackCount = discs.flat().length;
+
+  if (trackCount !== files.length)
+    throw new Error('File/track length mismatch');
+
+  if (await fs.exists(releaseDest)) {
+    if (
+      !(await confirm(
+        `Destination already exists (${releaseDest}), erase/overwrite?`
+      ))
+    ) {
+      return false;
+    }
+    await fs.remove(releaseDest);
+  }
+
+  await fs.ensureDir(releaseDest);
+  await processTracks(files, release, releaseDest, coverFile);
+
+  return releaseDest;
 }

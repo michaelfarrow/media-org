@@ -69,13 +69,13 @@ function getAudioFiles(dir: string): Promise<Track[]> {
 }
 
 async function trackCountsMatch(tracks: Track[], losslessTracks: Track[]) {
-  return tracks.length == losslessTracks.length;
+  return tracks.length === losslessTracks.length;
 }
 
 async function trackBitDepthsValid(tracks: Track[]) {
   let pass = true;
   for (const track of tracks) {
-    if ((await audioFileBitDepth(track.path)) === 16) {
+    if ((await audioFileBitDepth(track.path)) !== 16) {
       pass = false;
       break;
     }
@@ -137,8 +137,8 @@ async function processAlbum(album: Album) {
     return;
   }
 
-  console.log('');
-  console.log('Processing', album);
+  // console.log('');
+  // console.log('Processing', album);
 
   const losslessExists = await fs.exists(losslessDir);
 
@@ -149,12 +149,14 @@ async function processAlbum(album: Album) {
 
     if (!(await trackCountsMatch(tracks, losslessTracks))) {
       duds++;
-      return console.log('Mismatched track counts');
+      console.log('Mismatched track counts', losslessDir);
+      return;
     }
 
     if (!(await trackBitDepthsValid(losslessTracks))) {
       duds++;
-      return console.log('Invalid bit depth');
+      console.log('Invalid bit depth', losslessDir);
+      return;
     }
 
     const diff = await diffTrackNames(tracks, losslessTracks);
@@ -162,9 +164,11 @@ async function processAlbum(album: Album) {
     if (diff) {
       const diffCount = diff.failedFiltered.length;
       console.log(
-        `${diffCount} track name${diffCount !== 1 ? 's' : ''} different`
+        `${diffCount} track name${diffCount !== 1 ? 's' : ''} different`,
+        losslessDir
       );
-      console.log(diff.failedFiltered);
+      // console.log(diff.failedFiltered);
+
       valid = false;
       // valid = await confirm('Valid?');
     }
