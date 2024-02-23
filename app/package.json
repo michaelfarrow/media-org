@@ -6,17 +6,19 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "ts": "tsx",
-    "temp": "npm run ts temp.ts",
-    "name": "npm run ts name.ts",
-    "compress": "npm run ts compress.ts",
-    "update": "npm run ts update.ts",
-    "checkbd": "npm run ts checkbd.ts",
-    "remap": "npm run ts remap.ts",
-    "build": "tsc"
+    "temp": "npm run ts src/temp.ts",
+    "name": "npm run ts src/name.ts",
+    "compress": "npm run ts src/compress.ts",
+    "update": "npm run ts src/update.ts",
+    "checkbd": "npm run ts src/checkbd.ts",
+    "remap": "npm run ts src/remap.ts",
+    "cli": "npm run ts src/cli.ts",
+    "build": "esbuild --bundle --minify-whitespace --platform=node --sourcemap --target=es2018 --format=cjs --outfile=dist/cli.js src/cli.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@commander-js/extra-typings": "^12.0.0",
     "dice-coefficient": "^2.1.1",
     "fluent-ffmpeg": "^2.1.2",
     "fs-extra": "^11.2.0",
@@ -36,6 +38,7 @@
     "@types/klaw": "^3.0.6",
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.11.19",
+    "tsc-alias": "^1.8.8",
     "typescript": "^5.3.3"
   }
 }

@@ -125,15 +125,15 @@ export async function getMbData(id: string): Promise<Release | undefined> {
           'artist',
           releaseArtistCredit.find((artist) => artist.joinphrase === '')?.artist
             .id || releaseArtistCredit[0].artist.id,
-          ['genres', 'url-rels']
+          ['genres', 'url-rels', 'release-groups']
         ))) ||
       undefined;
 
-    if (!group) throw new Error('Cannot find group');
+    if (!group) throw new Error('Cannot find release group');
     if (!credit) throw new Error('Cannot find artist');
 
     const artistName = replaceStrangeChars(credit.name);
-    const albumTitle = replaceStrangeChars(release.title);
+    const albumTitle = replaceStrangeChars(group.title);
 
     const discs = release.media
       .filter(

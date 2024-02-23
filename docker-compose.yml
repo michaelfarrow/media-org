@@ -3,7 +3,7 @@ services:
     container_name: music-org-temp
     build: .
     volumes:
-      - ./src:/app
+      - ./app:/app
       - /mnt/media:/media
     stdin_open: true
     tty: true
@@ -11,7 +11,7 @@ services:
     container_name: music-org-app
     build: .
     volumes:
-      - ./src:/app
+      - ./app:/app
       - ./.media:/media
     stdin_open: true
     tty: true

@@ -11,8 +11,8 @@ import { confirm } from '@/lib/ui';
 
 export default async function update(
   src: string,
-  destLossless: string,
-  destCompressed: string
+  destLossless: string
+  // destCompressed: string
 ) {
   const releaseFile = path.resolve(src, RELEASE_FILE);
   const releaseExisting = Release.parse(await fs.readJson(releaseFile));
@@ -39,5 +39,7 @@ export default async function update(
     },
   });
 
-  if (releaseRes) return await compress(src, destCompressed);
+  return releaseRes;
+
+  // if (releaseRes) return await compress(src, destCompressed);
 }

@@ -1,4 +1,5 @@
-import ffmpeg, { type FfmpegCommand, type FfprobeData } from 'fluent-ffmpeg';
+import ffmpeg from '@/lib/ffmpeg';
+import { type FfmpegCommand, type FfprobeData } from 'fluent-ffmpeg';
 
 export type MetaTags = Record<string, string | number | undefined>;
 export type Arg = [string, string];
@@ -36,8 +37,6 @@ export function probeAudioFile(file: string): Promise<FfprobeData> {
     });
   });
 }
-
-// ffmpeg -i "/media/music/__new/PVRIS/2023 - EVERGREEN/11 - EVERGREEN.flac" -y -map 0:a -map_metadata -1 -acodec alac -sample_fmt s16p -ar 44100 "/app/test-root/PVRIS/EVERGREEN/11 EVERGREEN.m4a"
 
 export function audioStream(data: FfprobeData) {
   return data.streams.find((stream) => stream.codec_type === 'audio');

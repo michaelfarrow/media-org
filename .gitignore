@@ -1,5 +1,5 @@
 .media
 .DS_Store
 node_modules
-src/test-*
-src/**/*.js
+app/test-*
+app/dist
