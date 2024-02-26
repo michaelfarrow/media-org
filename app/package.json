@@ -20,12 +20,14 @@
   "dependencies": {
     "@commander-js/extra-typings": "^12.0.0",
     "dice-coefficient": "^2.1.1",
+    "finalhandler": "^1.2.0",
     "fluent-ffmpeg": "^2.1.2",
     "fs-extra": "^11.2.0",
     "klaw": "^4.1.0",
     "lodash": "^4.17.21",
     "musicbrainz-api": "^0.14.0",
     "natural-orderby": "^3.0.2",
+    "serve-static": "^1.15.0",
     "sharp": "^0.33.2",
     "tsx": "^4.7.1",
     "utimes": "^5.2.1",
@@ -33,11 +35,13 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/finalhandler": "^1.2.3",
     "@types/fluent-ffmpeg": "^2.1.24",
     "@types/fs-extra": "^11.0.4",
     "@types/klaw": "^3.0.6",
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.11.19",
+    "@types/serve-static": "^1.15.5",
     "tsc-alias": "^1.8.8",
     "typescript": "^5.3.3"
   }
