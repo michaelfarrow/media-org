@@ -1,10 +1,18 @@
+volumes:
+  media:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=nas.farrow.local,nolock,soft,rw
+      device: :/volume1/media
+
 services:
   temp:
     container_name: music-org-temp
     build: .
     volumes:
       - ./app:/app
-      - /mnt/media:/media
+      - media:/media
     stdin_open: true
     tty: true
   app:
@@ -12,6 +20,6 @@ services:
     build: .
     volumes:
       - ./app:/app
-      - ./.media:/media
+      - media:/media
     stdin_open: true
     tty: true
