@@ -142,14 +142,31 @@ export default async function processUpdate(
 
   if (similarity === false) throw new Error('Track count does not match');
   if (similarity !== true) {
-    console.log('Tracks do not look alike');
+    console.log('Tracks do not look alike, please review:');
     console.log('');
-    console.log('Similarity:');
-    console.log(
-      similarity.map((disc) => disc.map((s, i) => `${i + 1} - ${s}`))
-    );
-    logTracks(files);
-    logDiscs(release.discs);
+    // console.log('Similarity:');
+    // console.log(
+    //   similarity.map((disc) => disc.map((s, i) => `${i + 1} - ${s}`))
+    // );
+    // logTracks(files);
+    // logDiscs(release.discs);
+
+    for (let i = 0; i < similarity.length; i++) {
+      for (let j = 0; j < similarity[i].length; j++) {
+        const s = similarity[i][j];
+        if (s !== 1) {
+          console.log(
+            `${i + 1}-${j + 1}: ${files[i].files[j].nameWithoutExt} > ${
+              release.discs[i][j].title
+            }`,
+            s
+          );
+        }
+      }
+    }
+
+    console.log('');
+
     if (!(await confirm('Continue?'))) return false;
   }
 

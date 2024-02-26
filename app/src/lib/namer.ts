@@ -244,8 +244,12 @@ export function compareFiles(files: GroupedFiles[], release: Release) {
   const trackSimilarity = files.map((dir, i) =>
     dir.files.map((file, j) => {
       return diceCoefficient(
-        file.nameWithoutExt.toLowerCase().replace(/^(\d+-)?\d+\.?\s*-?\s*/, ''),
-        release.discs[i][j].title.toLowerCase()
+        replaceStrangeChars(
+          file.nameWithoutExt
+            .toLowerCase()
+            .replace(/^(\d+-)?\d+\.?\s*-?\s*/, '')
+        ),
+        replaceStrangeChars(release.discs[i][j].title.toLowerCase())
       );
     })
   );
