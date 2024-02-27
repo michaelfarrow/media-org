@@ -78,7 +78,7 @@ export function convertToAlac(
   const actionArgs: Arg[] = options.copy
     ? [['-c:a', 'copy']]
     : [
-        ['-acodec', 'alac'],
+        ['-c:a', 'alac'],
         ['-sample_fmt', `s${options.bitDepth}p`],
         ['-ar', `${options.sampleRate}`],
       ];

@@ -12,7 +12,6 @@ WORKDIR /app
 ENV LD_LIBRARY_PATH=/usr/local/lib
 
 COPY --from=ffmpeg /usr/local /usr/local/
-# COPY --from=ffmpeg /usr/lib/*-linux-gnu/* /usr/lib/
 COPY --from=ffmpeg /lib/*-linux-gnu/* /usr/lib/
 
 # COPY --from=build /app/node_modules ./node_modules
