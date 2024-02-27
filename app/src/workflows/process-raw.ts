@@ -7,6 +7,9 @@ import {
   probeAudioFile,
 } from '@/lib/audio';
 
+const BIT_DEPTH = 16;
+const SAMPLE_RATE = 44100;
+
 export default function processRaw(
   src: string,
   dest: string,
@@ -20,14 +23,16 @@ export default function processRaw(
       const bitDepth = audioBitDepth(info);
       const sampleRate = audioSampleRate(info);
 
-      if (!bitDepth || bitDepth < 16)
+      if (!bitDepth || bitDepth < BIT_DEPTH)
         throw new Error('Bit depth not high enough');
 
-      if (!sampleRate || sampleRate < 44100)
+      if (!sampleRate || sampleRate < SAMPLE_RATE)
         throw new Error('Sample rate not high enough');
 
       const copy =
-        track.ext === 'm4a' && bitDepth === 16 && sampleRate === 44100;
+        track.ext === 'm4a' &&
+        bitDepth === BIT_DEPTH &&
+        sampleRate === SAMPLE_RATE;
 
       if (copy && simpleCopy) {
         console.log(`Copying ${track.path} > ${dest}`);
@@ -36,8 +41,8 @@ export default function processRaw(
       }
 
       return await convertToAlac(track.path, dest, {
-        bitDepth: 16,
-        sampleRate: 44100,
+        bitDepth: BIT_DEPTH,
+        sampleRate: SAMPLE_RATE,
         copy,
       });
     },
