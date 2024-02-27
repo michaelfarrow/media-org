@@ -12,6 +12,7 @@ services:
     build: .
     volumes:
       - ./app:/app
+      - ./cli:/usr/local/bin/cli
       - media:/media
     stdin_open: true
     tty: true
@@ -20,6 +21,7 @@ services:
     build: .
     volumes:
       - ./app:/app
+      - ./cli:/usr/local/bin/cli
       - media:/media
     stdin_open: true
     tty: true
