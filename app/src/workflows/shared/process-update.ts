@@ -26,12 +26,12 @@ const COVER_RESIZE = 1417;
 
 export type ProcessTrack = (track: File, dest: string) => Promise<boolean>;
 
-export type Options = {
+export interface Options {
   mbId: string;
   processTrack: ProcessTrack;
   postProcess?: (dest: string) => Promise<void>;
   releaseExts?: string[];
-};
+}
 
 async function copyFiles(src: string, dest: string, files: string[]) {
   for (const copyFile of files) {
