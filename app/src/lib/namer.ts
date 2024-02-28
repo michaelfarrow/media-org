@@ -69,7 +69,7 @@ export function trackFileName(
   trackNumber: number
 ) {
   const track: Track | undefined = release.discs?.[discNumber]?.[trackNumber];
-  if (!track) return new Error('Could not find track in release');
+  if (!track) throw new Error('Could not find track in release');
 
   const discCount = release.discs.length;
 
@@ -79,11 +79,10 @@ export function trackFileName(
 }
 
 export function itemName(str: string, dir?: boolean) {
-  return str
-    .replace(/[<>:\\\/\*\?"|\$]/g, '_')
-    .replace(/^\./, '_')
-    .replace(/\.$/, '_');
+  let returnStr = str.replace(/[<>:\\\/\*\?"|\$]/g, '_').replace(/^\./, '_');
   // <>:\/*?"|
+  if (dir) returnStr = returnStr.replace(/\.$/, '_');
+  return returnStr;
 }
 
 export function dirName(str: string) {
