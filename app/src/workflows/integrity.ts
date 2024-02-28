@@ -5,8 +5,8 @@ import {
   MUSIC_LOSSESS_FINAL_DIR,
   RELEASE_FILE,
   COVER_FILES_TO_CONVERT,
-} from '../lib/config';
-import { Release, getReleaseFiles } from '../lib/namer';
+} from '@/lib/config';
+import { Release, getReleaseFiles } from '@/lib/namer';
 
 export default async function integrity() {
   const artists = await getDirs(MUSIC_LOSSESS_FINAL_DIR);

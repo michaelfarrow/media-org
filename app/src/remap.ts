@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { getDirs } from '@/lib/fs';
 import processRaw from '@/workflows/process-raw';
-import { MUSIC_LOSSESS_NEW_DIR, MUSIC_LOSSESS_FINAL_DIR } from './lib/config';
+import { MUSIC_LOSSESS_NEW_DIR, MUSIC_LOSSESS_FINAL_DIR } from '@/lib/config';
 
 const SRC = MUSIC_LOSSESS_NEW_DIR;
 const DEST = MUSIC_LOSSESS_FINAL_DIR;

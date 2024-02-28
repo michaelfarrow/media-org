@@ -1,13 +1,13 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { getDirs } from '@/lib/fs';
-import { MUSIC_LOSSESS_FINAL_DIR, RELEASE_FILE } from './lib/config';
+import { MUSIC_LOSSESS_FINAL_DIR, RELEASE_FILE } from '@/lib/config';
 import {
   Release,
   releasePath,
   trackFileName,
   getReleaseFiles,
-} from './lib/namer';
+} from '@/lib/namer';
 
 async function main() {
   const artists = await getDirs(MUSIC_LOSSESS_FINAL_DIR);

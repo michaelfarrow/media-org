@@ -1,16 +1,16 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { type Dir, type File, getDirs, getFileTypes } from './lib/fs';
-import { dirName, fileName } from './lib/namer';
-import writeTags from './lib/write-aac-metadata';
-import { confirm } from './lib/ui';
-import { audioFileBitDepth } from './lib/audio';
+import { type Dir, type File, getDirs, getFileTypes } from '@/lib/fs';
+import { dirName, fileName } from '@/lib/namer';
+import writeTags from '@/lib/write-aac-metadata';
+import { confirm } from '@/lib/ui';
+import { audioFileBitDepth } from '@/lib/audio';
 
 import {
   MUSIC_LOSSESS_DIR,
   MUSIC_LOSSESS_NEW_DIR,
   MUSIC_COMPRESSED_DIR,
-} from './lib/config';
+} from '@/lib/config';
 
 let total = 0;
 let duds = 0;
