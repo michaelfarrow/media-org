@@ -2,6 +2,7 @@ import { Command } from '@commander-js/extra-typings';
 import check from '@/commands/check';
 import name from '@/commands/name';
 import update from '@/commands/update';
+import integrity from '@/commands/integrity';
 
 const program = new Command();
 
@@ -30,5 +31,9 @@ program
   .action(async (src) => {
     await update(src);
   });
+
+program.command('integrity').action(async () => {
+  await integrity();
+});
 
 program.parse();
