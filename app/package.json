@@ -12,6 +12,7 @@
     "update": "npm run ts src/update.ts",
     "checkbd": "npm run ts src/checkbd.ts",
     "remap": "npm run ts src/remap.ts",
+    "addyears": "npm run ts src/addyears.ts",
     "cli": "npm run ts src/cli.ts",
     "build": "esbuild --bundle --minify-whitespace --platform=node --sourcemap --target=es2018 --format=cjs --outfile=dist/cli.js src/cli.ts"
   },

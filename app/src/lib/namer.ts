@@ -56,10 +56,10 @@ export function artistPath(artist: string) {
 }
 
 export function releasePath(release: Release) {
-  const { title, disambiguation, artist } = release;
+  const { title, disambiguation, artist, year } = release;
   return path.join(
     artistPath(artist),
-    dirName(`${title}${disambiguation ? ` (${disambiguation})` : ''}`)
+    dirName(`${year} ${title}${disambiguation ? ` (${disambiguation})` : ''}`)
   );
 }
 
@@ -79,7 +79,10 @@ export function trackFileName(
 }
 
 export function itemName(str: string, dir?: boolean) {
-  return str.replace(/[<>:\\\/\*\?"|\$]/g, '_').replace(/^\./, '_');
+  return str
+    .replace(/[<>:\\\/\*\?"|\$]/g, '_')
+    .replace(/^\./, '_')
+    .replace(/\.$/, '_');
   // <>:\/*?"|
 }
 
