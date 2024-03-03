@@ -5,15 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "ts": "tsx",
-    "temp": "npm run ts src/temp.ts",
-    "name": "npm run ts src/name.ts",
-    "compress": "npm run ts src/compress.ts",
-    "update": "npm run ts src/update.ts",
-    "checkbd": "npm run ts src/checkbd.ts",
-    "remap": "npm run ts src/remap.ts",
-    "addyears": "npm run ts src/addyears.ts",
-    "cli": "npm run ts src/cli.ts",
+    "temp": "tsx src/temp.ts",
+    "checkbd": "tsx src/checkbd.ts",
+    "remap": "tsx src/remap.ts",
+    "addyears": "tsx src/addyears.ts",
+    "cli": "tsx src/cli.ts",
     "build": "esbuild --bundle --minify-whitespace --platform=node --sourcemap --target=es2018 --format=cjs --outfile=dist/cli.js src/cli.ts"
   },
   "author": "",
@@ -43,7 +39,7 @@
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.11.19",
     "@types/serve-static": "^1.15.5",
-    "tsc-alias": "^1.8.8",
+    "esbuild": "^0.20.1",
     "typescript": "^5.3.3"
   }
 }

@@ -1,5 +1,4 @@
 .media
 .DS_Store
 node_modules
-app/test-*
-app/dist
+dist

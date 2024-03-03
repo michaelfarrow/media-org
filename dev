@@ -1,4 +1,4 @@
 #!/bin/bash
 
 ./up
-./attach app
+./attach temp

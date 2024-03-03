@@ -2,6 +2,8 @@ import { Command } from '@commander-js/extra-typings';
 import check from '@/commands/check';
 import name from '@/commands/name';
 import update from '@/commands/update';
+import compress from '@/commands/compress';
+import compressAll from '@/commands/compress-all';
 import integrity from '@/commands/integrity';
 
 const program = new Command();
@@ -31,6 +33,17 @@ program
   .action(async (src) => {
     await update(src);
   });
+
+program
+  .command('compress')
+  .argument('[source]', 'source directory')
+  .action(async (src) => {
+    await compress(src);
+  });
+
+program.command('compress-all').action(async () => {
+  await compressAll();
+});
 
 program.command('integrity').action(async () => {
   await integrity();

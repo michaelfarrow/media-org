@@ -6,6 +6,10 @@ import { confirm } from '@/lib/ui';
 import { Release, releasePath, trackFileName } from '@/lib/namer';
 import { convertToM4a } from '@/lib/audio';
 
+export interface Options {
+  skipComplete?: boolean;
+}
+
 // Warn if anything is to be overriden
 // Move / rename items if required
 
@@ -50,7 +54,13 @@ async function processTracks(
   }
 }
 
-export default async function compress(src: string, dest: string) {
+export default async function compress(
+  src: string,
+  dest: string,
+  options: Options = {}
+) {
+  const { skipComplete } = options;
+
   const coverFile = path.resolve(src, COVER_FILE);
   const releaseFile = path.resolve(src, RELEASE_FILE);
 
@@ -74,13 +84,18 @@ export default async function compress(src: string, dest: string) {
     throw new Error('File/track length mismatch');
 
   if (await fs.exists(releaseDest)) {
+    const existingFiles = await getFileTypes(releaseDest, 'm4a', {
+      sort: 'asc',
+    });
+
     if (
+      (existingFiles.length === files.length && skipComplete) ||
       !(await confirm(
         `Destination already exists (${releaseDest}), erase/overwrite?`
       ))
-    ) {
+    )
       return false;
-    }
+
     await fs.remove(releaseDest);
   }
 
