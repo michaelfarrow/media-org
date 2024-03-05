@@ -25,15 +25,12 @@ export default async function processLossless(options: Options = {}) {
 
   const artists = await getDirs(MUSIC_LOSSESS_FINAL_DIR);
 
-  console.log(artists);
-
   for (const artist of artists) {
     processArtist && (await processArtist(artist));
 
     const releases = await getDirs(artist.path);
 
     for (const release of releases) {
-      console.log(release);
       const releaseFile = path.resolve(release.path, RELEASE_FILE);
       const info =
         ((await fs.exists(releaseFile)) &&
