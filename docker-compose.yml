@@ -9,32 +9,10 @@ volumes:
 services:
   temp:
     container_name: music-org-temp
-    build: .
+    build:
+      target: dev
     volumes:
       - ./app:/app
-      - ./cli:/usr/local/bin/cli
       - media:/media
-    stdin_open: true
-    tty: true
-  frontend:
-    container_name: music-org-frontend
-    build: .
-    volumes:
-      - ./app:/app
-      - ./cli:/usr/local/bin/cli
-      - media:/media
-    stdin_open: true
-    ports:
-      - 3333:3000
-    tty: true
-  server:
-    container_name: music-org-server
-    build: .
-    volumes:
-      - ./app:/app
-      - ./cli:/usr/local/bin/cli
-      - media:/media
-    ports:
-      - 3334:3000
     stdin_open: true
     tty: true

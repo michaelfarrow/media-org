@@ -10,7 +10,7 @@
     "remap": "tsx src/remap.ts",
     "addyears": "tsx src/addyears.ts",
     "cli": "tsx src/cli.ts",
-    "build": "esbuild --bundle --minify-whitespace --platform=node --sourcemap --target=es2018 --format=cjs --outfile=dist/cli.js src/cli.ts"
+    "build": "esbuild --bundle --minify-whitespace --platform=node --target=es2018 --format=cjs --outfile=dist/cli.js src/cli.ts"
   },
   "author": "",
   "license": "ISC",

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+IMAGE=weyforth/music-org
+
+docker build . -t $IMAGE --target dist
+docker push $IMAGE

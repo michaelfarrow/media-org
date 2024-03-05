@@ -1,8 +1,8 @@
-import { z } from 'zod';
+import { z as originalZod } from 'zod';
 
-type ZodCustom = typeof z & {
+type ZodCustom = typeof originalZod & {
   strictBoolean: typeof strictBoolean;
-  coerce: (typeof z)['coerce'] & {
+  coerce: (typeof originalZod)['coerce'] & {
     strictBoolean: typeof strictBoolean;
   };
 };
@@ -10,7 +10,7 @@ type ZodCustom = typeof z & {
 const strictBoolean = (...params: Parameters<typeof z.boolean>) => {
   const [options] = params;
 
-  return z
+  return originalZod
     .enum(['0', '1', 'true', 'false'], options)
     .catch('false')
     .transform((value) =>
@@ -23,12 +23,12 @@ const strictBooleanCoorder = (...params: Parameters<typeof z.boolean>) => {
   return strictBoolean({ ...options, coerce: true });
 };
 
-const customZod: ZodCustom = {
-  ...z,
+const z: ZodCustom = {
+  ...originalZod,
   strictBoolean,
-  coerce: { ...z.coerce, strictBoolean: strictBooleanCoorder },
+  coerce: { ...originalZod.coerce, strictBoolean: strictBooleanCoorder },
 };
 
 export * from 'zod';
 
-export { customZod as z };
+export { z };
