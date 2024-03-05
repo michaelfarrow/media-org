@@ -37,11 +37,13 @@ async function processTracks(
         `${trackFileName(release, discNumber, trackNumber)}.m4a`
       );
 
+      const artists = track.artists.join('; ');
+
       await convertToM4a(trackSrc, trackDest, {
         bitRate: 320,
         cover: coverFile,
         tags: {
-          artist: track.artists.join('; '),
+          artist: artists !== release.artist ? artists : undefined,
           album_artist: release.artist,
           title: track.title,
           album: release.title,
