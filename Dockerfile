@@ -30,6 +30,9 @@ FROM common as dev
 
 
 FROM common as dist
+
 COPY --from=build /app/node_modules/@img ./node_modules/@img
 COPY --from=build /app/dist ./dist
 COPY ./cli /usr/local/bin/cli
+
+WORKDIR /media
