@@ -10,9 +10,9 @@ services:
   temp:
     container_name: music-org-temp
     build:
-      target: dist
+      target: dev
     volumes:
-      # - ./app:/app
+      - ./app:/app
       - media:/media
     stdin_open: true
     tty: true

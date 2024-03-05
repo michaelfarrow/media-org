@@ -73,7 +73,7 @@ export function trackFileName(
 
   const discCount = release.discs.length;
 
-  return `${discCount > 1 ? `${discNumber + 1}` : ''}${String(
+  return `${discCount > 1 ? `${discNumber + 1}-` : ''}${String(
     trackNumber + 1
   ).padStart(2, '0')} ${fileName(track.title)}`;
 }
