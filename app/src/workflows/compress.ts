@@ -137,14 +137,11 @@ export default async function compress(
     )
       return false;
 
-    console.log('remove', releaseDest);
-    // await fs.remove(releaseDest);
+    await fs.remove(releaseDest);
   }
 
-  console.log('ensureDir', releaseDest);
-  console.log('processTracks');
-  // await fs.ensureDir(releaseDest);
-  // await processTracks(files, release, releaseDest, coverFile);
+  await fs.ensureDir(releaseDest);
+  await processTracks(files, release, releaseDest, coverFile);
 
   return releaseDest;
 }
