@@ -5,6 +5,8 @@ import { type File, getFileTypes } from '@/lib/fs';
 import { confirm } from '@/lib/ui';
 import { Release, releasePath, trackFileName } from '@/lib/namer';
 import { convertToM4a } from '@/lib/audio';
+import { diffWords } from 'diff';
+import colors from 'colors';
 
 export interface Options {
   skipComplete?: boolean;
@@ -90,19 +92,59 @@ export default async function compress(
       sort: 'asc',
     });
 
+    const existingFileNames = existingFiles.map((file) => file.nameWithoutExt);
+
+    const newFileNames = discs
+      .map((tracks, discNumber) => {
+        return tracks.map(({}, trackNumber) =>
+          trackFileName(release, discNumber, trackNumber)
+        );
+      })
+      .flat();
+
+    const different =
+      JSON.stringify(existingFileNames) !== JSON.stringify(newFileNames);
+
+    if (different) {
+      for (
+        let i = 0;
+        i < Math.max(existingFileNames.length, newFileNames.length);
+        i++
+      ) {
+        const existingFileName = existingFileNames[i] || '';
+        const newFileName = newFileNames[i] || '';
+
+        const fileNameDiff = diffWords(existingFileName, newFileName);
+
+        fileNameDiff.forEach((part) => {
+          const text = part.added
+            ? colors.bgGreen(part.value)
+            : part.removed
+            ? colors.bgRed(part.value)
+            : part.value;
+          process.stdout.write(text);
+        });
+
+        process.stdout.write('\n');
+      }
+    }
+
     if (
-      (existingFiles.length === files.length && skipComplete) ||
+      (!different && skipComplete) ||
       !(await confirm(
         `Destination already exists (${releaseDest}), erase/overwrite?`
       ))
     )
       return false;
 
-    await fs.remove(releaseDest);
+    console.log('remove', releaseDest);
+    // await fs.remove(releaseDest);
   }
 
-  await fs.ensureDir(releaseDest);
-  await processTracks(files, release, releaseDest, coverFile);
+  console.log('ensureDir', releaseDest);
+  console.log('processTracks');
+  // await fs.ensureDir(releaseDest);
+  // await processTracks(files, release, releaseDest, coverFile);
 
   return releaseDest;
 }

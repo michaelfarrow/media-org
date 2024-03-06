@@ -16,6 +16,9 @@ FROM node:20.11.1 as common
 
 WORKDIR /app
 
+RUN apt-get update
+RUN apt-get install -y shntool flac cuetools
+
 ENV LD_LIBRARY_PATH=/usr/local/lib
 COPY --from=ffmpeg /usr/local /usr/local/
 COPY --from=ffmpeg /lib/*-linux-gnu/* /usr/lib/

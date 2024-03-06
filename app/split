@@ -1,0 +1,6 @@
+#!/bin/bash
+
+filename=$1
+filename="${filename%.*}"
+
+shnsplit -f "$filename.cue" -t "%n %t" -o flac "$1"

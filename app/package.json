@@ -16,7 +16,9 @@
   "license": "ISC",
   "dependencies": {
     "@commander-js/extra-typings": "^12.0.0",
+    "colors": "^1.4.0",
     "dice-coefficient": "^2.1.1",
+    "diff": "^5.2.0",
     "finalhandler": "^1.2.0",
     "fluent-ffmpeg": "^2.1.2",
     "fs-extra": "^11.2.0",
@@ -32,6 +34,8 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/colors": "^1.2.1",
+    "@types/diff": "^5.0.9",
     "@types/finalhandler": "^1.2.3",
     "@types/fluent-ffmpeg": "^2.1.24",
     "@types/fs-extra": "^11.0.4",
