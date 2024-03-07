@@ -5,6 +5,7 @@ import update from '@/commands/update';
 import compress from '@/commands/compress';
 import compressAll from '@/commands/compress-all';
 import integrity from '@/commands/integrity';
+import art from '@/commands/art';
 
 const program = new Command();
 
@@ -47,6 +48,10 @@ program.command('compress-all').action(async () => {
 
 program.command('integrity').action(async () => {
   await integrity();
+});
+
+program.command('art').action(async () => {
+  await art();
 });
 
 program.parse();

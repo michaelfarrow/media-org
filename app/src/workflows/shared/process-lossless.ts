@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { type Item, getDirs } from '@/lib/fs';
-import { MUSIC_LOSSESS_FINAL_DIR, RELEASE_FILE } from '@/lib/config';
+import { MUSIC_LOSSESS_DIR, RELEASE_FILE } from '@/lib/config';
 import { Release, getReleaseFiles } from '@/lib/namer';
 import { MakeOptional } from '@/lib/types';
 
@@ -23,7 +23,7 @@ export interface Options {
 export default async function processLossless(options: Options = {}) {
   const { processArtist, processReleaseRaw, processRelease } = options;
 
-  const artists = await getDirs(MUSIC_LOSSESS_FINAL_DIR);
+  const artists = await getDirs(MUSIC_LOSSESS_DIR);
 
   for (const artist of artists) {
     processArtist && (await processArtist(artist));

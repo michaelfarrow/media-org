@@ -1,6 +1,6 @@
 import path from 'path';
 import processRaw from '@/workflows/process-raw';
-import { MUSIC_LOSSESS_FINAL_DIR } from '@/lib/config';
+import { MUSIC_LOSSESS_DIR } from '@/lib/config';
 import { input } from '@/lib/ui';
 
 export default async function nameCommand(src?: string) {
@@ -11,9 +11,5 @@ export default async function nameCommand(src?: string) {
     return;
   }
 
-  return await processRaw(
-    src || path.resolve('.'),
-    MUSIC_LOSSESS_FINAL_DIR,
-    mbId
-  );
+  return await processRaw(src || path.resolve('.'), MUSIC_LOSSESS_DIR, mbId);
 }

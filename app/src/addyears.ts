@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import { getDirs } from '@/lib/fs';
-import { MUSIC_LOSSESS_FINAL_DIR, RELEASE_FILE } from '@/lib/config';
+import { MUSIC_LOSSESS_DIR, RELEASE_FILE } from '@/lib/config';
 import {
   Release,
   releasePath,
@@ -10,7 +10,7 @@ import {
 } from '@/lib/namer';
 
 async function main() {
-  const artists = await getDirs(MUSIC_LOSSESS_FINAL_DIR);
+  const artists = await getDirs(MUSIC_LOSSESS_DIR);
   for (const artist of artists) {
     const albums = await getDirs(artist.path);
     for (const album of albums) {
@@ -21,10 +21,7 @@ async function main() {
         throw new Error(`Release file does not exist: ${releaseFile}`);
 
       const release = Release.parse(await fs.readJson(releaseFile));
-      const releaseDest = path.resolve(
-        MUSIC_LOSSESS_FINAL_DIR,
-        releasePath(release)
-      );
+      const releaseDest = path.resolve(MUSIC_LOSSESS_DIR, releasePath(release));
 
       if (src !== releaseDest) {
         console.log('Renaming', src, '>', releaseDest);
