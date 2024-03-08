@@ -1,3 +1,0 @@
-#!/bin/bash
-
-npx -y http-server -p 3131 -c-1
