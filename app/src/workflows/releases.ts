@@ -15,7 +15,9 @@ const FILTER_PRIMARY_INCLUDE = ['Album']; // , 'EP'
 //   'Interview',
 // ];
 
-export default async function art() {
+export default async function releases(all?: boolean) {
+  const currentYear = new Date().getFullYear();
+
   return processArtists(MUSIC_LOSSESS_DIR, {
     async processArtist({ artist }) {
       const releases: Release[] = [];
@@ -64,14 +66,21 @@ export default async function art() {
       });
 
       const missingReleaseGroups = filteredReleaseGroups
-        .map((releaseGroup) => ({
-          ...releaseGroup,
-          year: releaseGroup['first-release-date'].match(/^\d{4}/)?.[0],
-        }))
+        .map((releaseGroup) => {
+          const year = releaseGroup['first-release-date'].match(/^\d{4}/)?.[0];
+          return {
+            ...releaseGroup,
+            year: year && Number(year),
+          };
+        })
         .filter((releaseGroup) => {
           return (
             releaseGroup.year && !existingGroupIds.includes(releaseGroup.id)
           );
+        })
+        .filter((releaseGroup) => {
+          if (all) return true;
+          return releaseGroup.year && releaseGroup.year >= currentYear - 1;
         });
 
       if (missingReleaseGroups.length) {

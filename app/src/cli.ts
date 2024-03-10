@@ -60,8 +60,14 @@ program.command('update-info').action(async () => {
   await updateInfo();
 });
 
-program.command('releases').action(async () => {
-  await releases();
-});
+program
+  .command('releases')
+  .option(
+    '-a --all',
+    'all releases, otherwise anything in current year and last'
+  )
+  .action(async ({ all }) => {
+    await releases(all);
+  });
 
 program.parse();
