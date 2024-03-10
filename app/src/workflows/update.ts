@@ -15,13 +15,17 @@ export default async function update(
   // destCompressed: string
 ) {
   const releaseFile = path.resolve(src, RELEASE_FILE);
-  const releaseExisting = Release.parse(await fs.readJson(releaseFile));
+  const releaseExisting = await fs.readJson(releaseFile);
+
+  const id: string | undefined = releaseExisting.id || undefined;
+
+  if (!id) throw new Error('Could not get release id');
 
   if (!(await fs.exists(releaseFile)))
     throw new Error(`Release file does not exist: ${releaseFile}`);
 
   const releaseRes = await processUpdate(src, destLossless, {
-    mbId: releaseExisting.id,
+    mbId: id,
     releaseExts: ['m4a'],
     async processTrack(track, dest) {
       if (track.path !== dest) {

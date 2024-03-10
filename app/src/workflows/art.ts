@@ -2,14 +2,10 @@ import path from 'path';
 import fs from 'fs-extra';
 import axios from 'axios';
 import sharp from 'sharp';
-import {
-  MUSIC_LOSSESS_DIR,
-  MUSIC_COMPRESSED_DIR,
-  RELEASE_FILE,
-  ARTIST_FILE,
-} from '@/lib/config';
-import { getDirs } from '@/lib/fs';
-import { Release } from '@/lib/namer';
+import { Item } from '@/lib/fs';
+import { MUSIC_COMPRESSED_DIR, ARTIST_FILE } from '@/lib/config';
+
+import processArtists from './shared/process-artists';
 
 const AUDIO_DB_KEY = '195003';
 
@@ -80,44 +76,23 @@ async function saveArt(src: string, dest: string) {
   await sharp(input).jpeg({ quality: 100 }).toFile(dest);
 }
 
+function artistArtPath(artist: Item) {
+  return path.resolve(artist.path, ARTIST_FILE);
+}
+
 export default async function art() {
-  const artists = await getDirs(MUSIC_COMPRESSED_DIR);
+  return processArtists(MUSIC_COMPRESSED_DIR, {
+    async shouldProcessArtist(artist) {
+      return !(await fs.exists(artistArtPath(artist)));
+    },
+    async processArtist({ artist, name, id }) {
+      const data = await getArt(name, id);
 
-  for (const artist of artists) {
-    const artistArtPath = path.resolve(artist.path, ARTIST_FILE);
-
-    if (await fs.exists(artistArtPath)) continue;
-
-    let artistId: string | undefined = undefined;
-    let artistName = artist.name;
-
-    const releases = await getDirs(
-      path.resolve(MUSIC_LOSSESS_DIR, artist.name)
-    );
-
-    const release = releases.length ? releases[0] : undefined;
-
-    if (release) {
-      const releaseFile = path.resolve(release.path, RELEASE_FILE);
-      const info =
-        ((await fs.exists(releaseFile)) &&
-          Release.parse(await fs.readJson(releaseFile))) ||
-        undefined;
-
-      if (info) {
-        artistName = info.artist;
-        artistId = info.artistId;
+      if (data && data.primary) {
+        await saveArt(data.primary, artistArtPath(artist));
+      } else {
+        console.log('MISSING', name);
       }
-    }
-
-    const data = await getArt(artistName, artistId);
-
-    if (data && data.primary) {
-      await saveArt(data.primary, artistArtPath);
-    } else {
-      console.log('MISSING', artistName);
-    }
-  }
-
-  return true;
+    },
+  });
 }

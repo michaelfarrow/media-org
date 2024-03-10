@@ -22,6 +22,7 @@ export type Track = z.infer<typeof Track>;
 export const Release = z.object({
   id: z.string(),
   artistId: z.string(),
+  groupId: z.string(),
   title: z.string(),
   disambiguation: z.string().optional(),
   artist: z.string(),
@@ -191,6 +192,7 @@ export async function getMbData(id: string): Promise<Release | undefined> {
     return {
       id: release.id,
       artistId: credit.id,
+      groupId: group.id,
       title: albumTitle,
       disambiguation: disambiguation?.length ? disambiguation : undefined,
       artist: artistName,

@@ -99,7 +99,7 @@ async function processTracks(
   }
 }
 
-async function outputInfoFile(release: Release, dest: string) {
+export async function outputInfoFile(release: Release, dest: string) {
   const infoDest = path.resolve(dest, RELEASE_FILE);
   console.log('Saving', infoDest);
   await fs.writeJSON(infoDest, release, { spaces: 2 });
