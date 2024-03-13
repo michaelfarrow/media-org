@@ -26,7 +26,7 @@ export default async function check(src: string) {
       [
         [
           '-lavfi',
-          'showspectrumpic=s=1000x800:mode=separate:start=15k:scale=log',
+          'showspectrumpic=s=1000x800:mode=separate:start=15k:stop=24k:scale=log',
         ],
       ]
     );

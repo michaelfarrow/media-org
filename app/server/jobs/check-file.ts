@@ -18,7 +18,7 @@ export default function (file: File) {
       await runFfmpegCommand(ffmpeg(file.path).output(dest), [
         [
           '-lavfi',
-          'showspectrumpic=s=1000x800:mode=separate:start=20k:stop=30k',
+          'showspectrumpic=s=1000x800:mode=separate:start=15k:stop=24k:scale=log',
         ],
       ]);
     } else {
