@@ -58,7 +58,7 @@ async function processTracks(
 
   const coverFileDest = path.resolve(releaseDest, COVER_FILE);
 
-  console.log('Copying', coverFile, '>', coverFileDest);
+  console.log('Compressing', coverFile, '>', coverFileDest);
   await sharp(coverFile).jpeg({ quality: 85 }).toFile(coverFileDest);
 }
 
