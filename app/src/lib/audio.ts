@@ -117,6 +117,7 @@ export function convertToM4a(
     ...actionArgs,
     ['-c:a', 'libfdk_aac'],
     ['-b:a', `${options.bitRate || 320}k`],
+    ['-ac', '2'],
     ['-cutoff', '20000'],
     ['-vbr', '0'],
     ['-afterburner', '1'],
