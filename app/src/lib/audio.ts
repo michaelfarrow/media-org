@@ -1,4 +1,5 @@
 import ffmpeg from '@/lib/ffmpeg';
+import { probeMediaFile } from '@/lib/media';
 import { type FfmpegCommand, type FfprobeData } from 'fluent-ffmpeg';
 
 export type MetaTags = Record<string, string | number | undefined>;
@@ -29,15 +30,6 @@ export function runFfmpegCommand(
   });
 }
 
-export function probeAudioFile(file: string): Promise<FfprobeData> {
-  return new Promise((resolve, reject) => {
-    ffmpeg(file).ffprobe((err, data) => {
-      if (err) return reject(err);
-      resolve(data);
-    });
-  });
-}
-
 export function audioStream(data: FfprobeData) {
   return data.streams.find((stream) => stream.codec_type === 'audio');
 }
@@ -53,11 +45,11 @@ export function audioSampleRate(data: FfprobeData) {
 }
 
 export async function audioFileBitDepth(file: string) {
-  return audioBitDepth(await probeAudioFile(file));
+  return audioBitDepth(await probeMediaFile(file));
 }
 
 export async function audioFileSampleRate(file: string) {
-  return audioSampleRate(await probeAudioFile(file));
+  return audioSampleRate(await probeMediaFile(file));
 }
 
 export function metaTagArgs(tags?: MetaTags): Arg[] {

@@ -1,11 +1,7 @@
 import processUpdate from './shared/process-update';
 import fs from 'fs-extra';
-import {
-  audioBitDepth,
-  audioSampleRate,
-  convertToAlac,
-  probeAudioFile,
-} from '@/lib/audio';
+import { probeMediaFile } from '@/lib/media';
+import { audioBitDepth, audioSampleRate, convertToAlac } from '@/lib/audio';
 
 const BIT_DEPTH = 16;
 const SAMPLE_RATE = 44100;
@@ -19,7 +15,7 @@ export default function processRaw(
   return processUpdate(src, dest, {
     mbId,
     async processTrack(track, dest) {
-      const info = await probeAudioFile(track.path);
+      const info = await probeMediaFile(track.path);
       const bitDepth = audioBitDepth(info);
       const sampleRate = audioSampleRate(info);
 
