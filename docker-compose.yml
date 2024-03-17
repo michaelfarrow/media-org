@@ -7,8 +7,8 @@ volumes:
       device: :/volume1/media
 
 services:
-  temp:
-    container_name: music-org-temp
+  app:
+    container_name: media-org-app
     build:
       target: dev
     volumes:

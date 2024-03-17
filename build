@@ -1,6 +1,6 @@
 #!/bin/sh
 
-IMAGE=weyforth/music-org
+IMAGE=weyforth/media-org
 
 docker build . -t $IMAGE --target dist
 docker push $IMAGE

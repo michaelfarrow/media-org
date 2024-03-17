@@ -36,7 +36,8 @@ FROM common as dist
 
 COPY --from=build /app/node_modules/@img ./node_modules/@img
 COPY --from=build /app/dist ./dist
-COPY ./app/cli /usr/local/bin/cli
+COPY ./app/music /usr/local/bin/music
+COPY ./app/movies /usr/local/bin/movies
 COPY ./app/split /usr/local/bin/split
 
 WORKDIR /media

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker attach music-org-$1
+docker attach media-org-$1

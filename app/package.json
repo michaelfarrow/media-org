@@ -9,8 +9,12 @@
     "checkbd": "tsx src/checkbd.ts",
     "remap": "tsx src/remap.ts",
     "addyears": "tsx src/addyears.ts",
-    "cli": "tsx src/cli.ts",
-    "build": "esbuild --bundle --minify-whitespace --platform=node --target=es2018 --format=cjs --outfile=dist/cli.js src/cli.ts"
+    "music": "tsx src/music",
+    "movies": "tsx src/movies",
+    "build:cli": "esbuild --bundle --minify-whitespace --platform=node --target=es2018 --format=cjs",
+    "build:music": "npm run build:cli -- --outfile=dist/music.js src/music/index.ts",
+    "build:movies": "npm run build:cli -- --outfile=dist/movies.js src/movies/index.ts",
+    "build": "npm run build:music && npm run build:movies"
   },
   "author": "",
   "license": "ISC",
@@ -35,7 +39,6 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/colors": "^1.2.1",
     "@types/diff": "^5.0.9",
     "@types/finalhandler": "^1.2.3",
     "@types/fluent-ffmpeg": "^2.1.24",

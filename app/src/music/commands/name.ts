@@ -1,5 +1,5 @@
 import path from 'path';
-import processRaw from '@/workflows/process-raw';
+import processRaw from '../workflows/process-raw';
 import { MUSIC_LOSSESS_DIR } from '@/lib/config';
 import { input } from '@/lib/ui';
 

@@ -1,13 +1,13 @@
 import { Command } from '@commander-js/extra-typings';
-import check from '@/commands/check';
-import name from '@/commands/name';
-import update from '@/commands/update';
-import compress from '@/commands/compress';
-import compressAll from '@/commands/compress-all';
-import integrity from '@/commands/integrity';
-import art from '@/commands/art';
-import updateInfo from '@/commands/update-info';
-import releases from '@/commands/releases';
+import check from './commands/check';
+import name from './commands/name';
+import update from './commands/update';
+import compress from './commands/compress';
+import compressAll from './commands/compress-all';
+import integrity from './commands/integrity';
+import art from './commands/art';
+import updateInfo from './commands/update-info';
+import releases from './commands/releases';
 
 const program = new Command();
 

@@ -1,5 +1,5 @@
 import path from 'path';
-import update from '@/workflows/update';
+import update from '../workflows/update';
 import { MUSIC_LOSSESS_DIR } from '@/lib/config';
 
 export default async function updateCommand(src?: string) {
