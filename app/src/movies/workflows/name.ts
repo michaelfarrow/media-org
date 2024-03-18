@@ -146,6 +146,9 @@ export default async function name(src: string, id: string) {
   if (!title) throw new Error('No title specified');
   if (!year) throw new Error('No release year specified');
 
+  if (!poster) await confirm('Poster image could not be found, continue?');
+  if (!backdrop) await confirm('Backdrop image could not be found, continue?');
+
   const streams = await chooseStreams(file);
 
   if (streams.video === null) throw new Error('No video stream');
