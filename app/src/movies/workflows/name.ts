@@ -159,7 +159,7 @@ export default async function name(src: string, id: string) {
     ['-map', `0:a:${streams.audio}`],
   ];
 
-  if (streams.sub) streamMapping.push(['-map', `0:s:${streams.sub}`]);
+  if (streams.sub !== null) streamMapping.push(['-map', `0:s:${streams.sub}`]);
 
   const name = `${title} (${year}) {imdb-${_id}}`;
   const ext = path.parse(file).ext;
