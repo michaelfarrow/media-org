@@ -1,15 +1,21 @@
 import fs from 'fs-extra';
+import axios from 'axios';
 import path from 'path';
 import { MovieDb, ExternalId, type MovieResult } from 'moviedb-promise';
 import promiseRetry from 'promise-retry';
-import { MOVIES_DIR, BACKDROP_FILE, POSTER_FILE } from '@/lib/config';
+import {
+  MOVIE_TYPES,
+  MOVIES_DIR,
+  BACKDROP_FILE,
+  POSTER_FILE,
+} from '@/lib/config';
 import { getFileTypes, downloadImage } from '@/lib/fs';
 import { input, confirm } from '@/lib/ui';
 import { runFfmpegCommand, probeMediaFile, type FfmpegArg } from '@/lib/media';
 import ffmpeg from '@/lib/ffmpeg';
 import { itemName } from '@/lib/namer';
+import { getSubtitles, getSubtitleLink } from '@/lib/movies';
 
-const FILE_TYPES = ['mp4', 'avi', 'mkv'];
 const TM_DB_KEY = '4219e299c89411838049ab0dab19ebd5';
 const IMAGE_PREFIX = 'https://image.tmdb.org/t/p/original';
 
@@ -27,7 +33,7 @@ async function getFile(src: string) {
   const stat = await fs.stat(src);
 
   if (stat.isDirectory()) {
-    const files = await getFileTypes(src, FILE_TYPES);
+    const files = await getFileTypes(src, MOVIE_TYPES);
 
     if (!files.length)
       throw new Error(`Could not find any valid video files in ${src}`);
@@ -48,9 +54,9 @@ async function getFile(src: string) {
     return files[0].path;
   }
 
-  if (!FILE_TYPES.includes(path.parse(src).ext.replace(/^\./, '')))
+  if (!MOVIE_TYPES.includes(path.parse(src).ext.replace(/^\./, '')))
     throw new Error(
-      `Invalid file type: ${src}, allowed: ${FILE_TYPES.join(', ')}`
+      `Invalid file type: ${src}, allowed: ${MOVIE_TYPES.join(', ')}`
     );
 
   return src;
@@ -85,15 +91,19 @@ async function chooseStreams(src: string) {
 
   const videoStreams = data.streams.filter((s) => s.codec_type === 'video');
   const audioStreams = data.streams.filter((s) => s.codec_type === 'audio');
-  const subtitleStreams = data.streams.filter(
-    (s) => s.codec_type === 'subtitle'
-  );
+  const subStreams = data.streams.filter((s) => s.codec_type === 'subtitle');
 
   const video = await selectStream('video', videoStreams);
   const audio = await selectStream('audio', audioStreams);
-  const sub = await selectStream('subtitle', subtitleStreams);
+  const sub = await selectStream('subtitle', subStreams);
 
-  return { video, audio, sub };
+  return {
+    video:
+      video !== null ? { index: video, stream: videoStreams[video] } : null,
+    audio:
+      audio !== null ? { index: audio, stream: audioStreams[audio] } : null,
+    sub: sub !== null ? { index: sub, stream: subStreams[sub] } : null,
+  };
 }
 
 export async function lookupData(id: string) {
@@ -158,11 +168,12 @@ export default async function name(src: string, id: string) {
   if (streams.audio === null) throw new Error('No audio stream');
 
   const streamMapping: FfmpegArg[] = [
-    ['-map', `0:v:${streams.video}`],
-    ['-map', `0:a:${streams.audio}`],
+    ['-map', `0:v:${streams.video.index}`],
+    ['-map', `0:a:${streams.audio.index}`],
   ];
 
-  if (streams.sub !== null) streamMapping.push(['-map', `0:s:${streams.sub}`]);
+  if (streams.sub !== null)
+    streamMapping.push(['-map', `0:s:${streams.sub.index}`]);
 
   const name = `${title} (${year}) {imdb-${_id}}`;
   const ext = path.parse(file).ext;
@@ -182,6 +193,49 @@ export default async function name(src: string, id: string) {
 
   await fs.ensureDir(dest);
 
+  const fps =
+    (streams.video.stream.avg_frame_rate &&
+      eval(streams.video.stream.avg_frame_rate)) ||
+    undefined;
+  const subtitles = await getSubtitles(src, fps);
+
+  if (subtitles.valid.length) {
+    console.log(
+      `Found forced subtitles, choose one or none (movie is ${fps} fps):`
+    );
+    for (let i = 0; i < subtitles.valid.length; i++) {
+      const subtitle = subtitles.valid[i];
+      const {
+        attributes: { fps, new_download_count, download_count, ratings, votes },
+      } = subtitle;
+      console.log(
+        `${i}: ${fps} fps, ${
+          new_download_count + download_count
+        } downloads, rated ${ratings} with ${votes} votes`
+      );
+    }
+
+    const chosenSubtitle = await input('#');
+
+    if (chosenSubtitle.length) {
+      const subtitle = subtitles.valid[Number(chosenSubtitle)];
+      if (!subtitle) throw new Error('Could not get chosen subtitle');
+      const subLink = await getSubtitleLink(subtitle);
+      if (!subLink) throw new Error('Could not get subtitle download link');
+
+      const subExt = path.parse(subLink.file_name).ext.replace(/\./, '');
+      const subDest = path.resolve(dest, `${name}.en.forced.${subExt}`);
+
+      const subRes = await axios.get(subLink.link, {
+        responseType: 'arraybuffer',
+      });
+      const subData = Buffer.from(subRes.data, 'binary');
+
+      console.log('Downloading subs', subDest);
+      await fs.writeFile(subDest, subData);
+    }
+  }
+
   if (poster) await saveArt(poster, path.resolve(dest, POSTER_FILE));
   if (backdrop) await saveArt(backdrop, path.resolve(dest, BACKDROP_FILE));
 
@@ -192,6 +246,7 @@ export default async function name(src: string, id: string) {
       ['-map_metadata', '-1'],
       ['-c', 'copy'],
       ['-metadata:s:v:0', `title=`],
+      ['-metadata:s:a:0', 'language=en'],
     ]
   );
 }

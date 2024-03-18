@@ -1,5 +1,6 @@
 import { Command } from '@commander-js/extra-typings';
 import name from './commands/name';
+import subtitles from './commands/subtitles';
 
 const program = new Command();
 
@@ -14,5 +15,9 @@ program
   .action(async (src) => {
     await name(src);
   });
+
+program.command('subtitles').action(async () => {
+  await subtitles();
+});
 
 program.parse();
