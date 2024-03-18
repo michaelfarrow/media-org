@@ -129,14 +129,13 @@ export async function lookupData(id: string) {
 }
 
 export default async function name(src: string, id: string) {
-  console.log(src);
-
   const _id = id.toLowerCase().trim();
   const file = await getFile(src);
 
   const data = await lookupData(_id);
 
-  if (!data) await confirm('Data could not be found, continue?');
+  if (!data && !(await confirm('Data could not be found, continue?')))
+    return false;
 
   let { title, year, poster, backdrop } = data || {};
 
@@ -146,8 +145,12 @@ export default async function name(src: string, id: string) {
   if (!title) throw new Error('No title specified');
   if (!year) throw new Error('No release year specified');
 
-  if (!poster) await confirm('Poster image could not be found, continue?');
-  if (!backdrop) await confirm('Backdrop image could not be found, continue?');
+  if (!poster && !(await confirm('Poster image could not be found, continue?')))
+    if (
+      !backdrop &&
+      (await confirm('Backdrop image could not be found, continue?'))
+    )
+      return false;
 
   const streams = await chooseStreams(file);
 
@@ -165,6 +168,17 @@ export default async function name(src: string, id: string) {
   const ext = path.parse(file).ext;
 
   const dest = path.resolve(MOVIES_DIR, itemName(name, true));
+  const sameSrcDest = path.resolve(src) === dest;
+
+  if (await fs.exists(dest)) {
+    if (
+      !sameSrcDest &&
+      !(await confirm(`Destination already exists (${dest}), erase/overwrite?`))
+    ) {
+      return false;
+    }
+    !sameSrcDest && (await fs.remove(dest));
+  }
 
   await fs.ensureDir(dest);
 
