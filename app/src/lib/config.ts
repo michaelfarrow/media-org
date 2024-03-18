@@ -14,3 +14,7 @@ export const COVER_FILES_TO_CONVERT = [COVER_FILE_FULL, COVER_FILE_UNDERSIZED];
 export const ARTIST_FILE = 'artist.jpg';
 
 export const SOURCE_FLAG_FILES = ['src-mp3', 'src-possible-mp3'];
+
+export const MOVIES_DIR = `${MEDIA_DIR}/movies`;
+export const POSTER_FILE = 'poster.jpg';
+export const BACKDROP_FILE = 'backdrop.jpg';

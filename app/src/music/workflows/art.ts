@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import axios from 'axios';
 import sharp from 'sharp';
-import { Item } from '@/lib/fs';
+import { type Item, downloadImage } from '@/lib/fs';
 import { MUSIC_COMPRESSED_DIR, ARTIST_FILE } from '@/lib/config';
 
 import processArtists from './shared/process-artists';
@@ -72,8 +72,7 @@ async function getArt(artist: string, id?: string) {
 
 async function saveArt(src: string, dest: string) {
   console.log('SAVE', src, dest);
-  const input = (await axios({ url: src, responseType: 'arraybuffer' })).data;
-  await sharp(input).jpeg({ quality: 100 }).toFile(dest);
+  return downloadImage(src, dest, 100);
 }
 
 function artistArtPath(artist: Item) {

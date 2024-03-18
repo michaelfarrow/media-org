@@ -1,6 +1,8 @@
 import path from 'path';
 import klaw from 'klaw';
 import { orderBy } from 'natural-orderby';
+import axios from 'axios';
+import sharp from 'sharp';
 
 export type Item = {
   name: string;
@@ -121,4 +123,13 @@ export function getFileTypes(
       return extensions.includes(parsed.ext.replace(/^\./, ''));
     })
   );
+}
+
+export async function downloadImage(
+  src: string,
+  dest: string,
+  quality: number = 100
+) {
+  const input = (await axios({ url: src, responseType: 'arraybuffer' })).data;
+  await sharp(input).jpeg({ quality }).toFile(dest);
 }

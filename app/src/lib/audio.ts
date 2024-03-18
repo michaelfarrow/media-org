@@ -1,34 +1,8 @@
 import ffmpeg from '@/lib/ffmpeg';
-import { probeMediaFile } from '@/lib/media';
-import { type FfmpegCommand, type FfprobeData } from 'fluent-ffmpeg';
+import { runFfmpegCommand, probeMediaFile, type FfmpegArg } from '@/lib/media';
+import { type FfprobeData } from 'fluent-ffmpeg';
 
 export type MetaTags = Record<string, string | number | undefined>;
-export type Arg = [string, string];
-
-export function runFfmpegCommand(
-  command: FfmpegCommand,
-  options: Arg[] = []
-): Promise<true> {
-  console.log(
-    'Ffmpeg options:',
-    options.map((option) => option.join(' '))
-  );
-
-  return new Promise((resolve, reject) => {
-    command
-      .withOptions(...options.flat())
-      .on('start', function (cliLine: string) {
-        console.log(`Spawned Ffmpeg with command: ${cliLine}`);
-      })
-      .on('progress', function (progress: { percent?: number }) {
-        progress.percent &&
-          console.log(`Processing: ${Math.round(progress.percent)}%`);
-      })
-      .on('error', reject)
-      .on('end', () => resolve(true))
-      .run();
-  });
-}
 
 export function audioStream(data: FfprobeData) {
   return data.streams.find((stream) => stream.codec_type === 'audio');
@@ -52,7 +26,7 @@ export async function audioFileSampleRate(file: string) {
   return audioSampleRate(await probeMediaFile(file));
 }
 
-export function metaTagArgs(tags?: MetaTags): Arg[] {
+export function metaTagArgs(tags?: MetaTags): FfmpegArg[] {
   if (!tags) return [];
   return Object.entries(tags)
     .filter(
@@ -67,7 +41,7 @@ export function convertToAlac(
   dest: string,
   options: { bitDepth: number; sampleRate: number; copy?: boolean }
 ) {
-  const actionArgs: Arg[] = options.copy
+  const actionArgs: FfmpegArg[] = options.copy
     ? [['-c:a', 'copy']]
     : [
         ['-c:a', 'alac'],
@@ -96,7 +70,7 @@ export function convertToM4a(
   if (options.cover) command.input(options.cover);
   command.output(dest);
 
-  const actionArgs: Arg[] = options.cover
+  const actionArgs: FfmpegArg[] = options.cover
     ? [
         ['-map', '1:v'],
         ['-c', 'copy'],

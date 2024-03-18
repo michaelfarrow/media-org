@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import { getFileTypes } from '@/lib/fs';
 import { input } from '@/lib/ui';
 import ffmpeg from '@/lib/ffmpeg';
-import { runFfmpegCommand } from '@/lib/audio';
+import { runFfmpegCommand } from '@/lib/media';
 
 import http from 'http';
 import serveStatic from 'serve-static';
