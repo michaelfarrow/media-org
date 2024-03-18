@@ -32,6 +32,7 @@
     "moviedb-promise": "^4.0.3",
     "musicbrainz-api": "^0.14.0",
     "natural-orderby": "^3.0.2",
+    "promise-retry": "^2.0.1",
     "serve-static": "^1.15.0",
     "sharp": "^0.33.2",
     "tsx": "^4.7.1",
@@ -47,6 +48,7 @@
     "@types/klaw": "^3.0.6",
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.11.19",
+    "@types/promise-retry": "^1.1.6",
     "@types/serve-static": "^1.15.5",
     "esbuild": "^0.20.1",
     "typescript": "^5.3.3"

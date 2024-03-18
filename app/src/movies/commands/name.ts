@@ -12,8 +12,6 @@ export default async function nameCommand(src?: string) {
   let imdbID: string | undefined = undefined;
 
   const existingId = _src.match(/(tt\d+)/i);
-  console.log(_src, existingId);
-
   if (existingId) imdbID = existingId[0].toLowerCase().trim();
 
   if (!imdbID) imdbID = (await input('IMDb id:')).trim();

@@ -1,6 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { MovieDb, ExternalId, type MovieResult } from 'moviedb-promise';
+import promiseRetry from 'promise-retry';
 import { MOVIES_DIR, BACKDROP_FILE, POSTER_FILE } from '@/lib/config';
 import { getFileTypes, downloadImage } from '@/lib/fs';
 import { input, confirm } from '@/lib/ui';
@@ -16,7 +17,10 @@ const moviedb = new MovieDb(TM_DB_KEY);
 
 async function saveArt(src: string, dest: string) {
   console.log('SAVE', src, dest);
-  return downloadImage(src, dest, 85);
+  return await promiseRetry((retry, number) => {
+    if (number !== 1) console.log('Trying again');
+    return downloadImage(src, dest, 85).catch(retry);
+  });
 }
 
 async function getFile(src: string) {
@@ -93,14 +97,19 @@ async function chooseStreams(src: string) {
 }
 
 export async function lookupData(id: string) {
-  const data = await moviedb.find(
-    {
-      id,
-      language: 'en-US',
-      external_source: ExternalId.ImdbId,
-    },
-    { timeout: 10000 }
-  );
+  const data = await promiseRetry((retry, number) => {
+    if (number !== 1) console.log('Trying again');
+    return moviedb
+      .find(
+        {
+          id,
+          language: 'en-US',
+          external_source: ExternalId.ImdbId,
+        },
+        { timeout: 10000 }
+      )
+      .catch(retry);
+  });
 
   const movie: MovieResult | undefined = data.movie_results?.[0];
 
