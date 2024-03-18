@@ -174,7 +174,7 @@ export default async function name(src: string, id: string) {
       ...streamMapping,
       ['-map_metadata', '-1'],
       ['-c', 'copy'],
-      ['-metadata:s:v:0', `title=${title}`],
+      ['-metadata:s:v:0', `title=`],
     ]
   );
 }
