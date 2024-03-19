@@ -106,7 +106,7 @@ async function chooseStreams(src: string) {
   };
 }
 
-export async function lookupData(id: string) {
+async function lookupData(id: string) {
   const data = await promiseRetry((retry, number) => {
     if (number !== 1) console.log('Trying again');
     return moviedb
@@ -129,80 +129,36 @@ export async function lookupData(id: string) {
   const backdrop = movie.backdrop_path;
   const title = movie.title;
   const year = movie.release_date?.match(/^\d{4}/)?.[0];
+  const language = movie.original_language;
 
   return {
     title,
     year,
+    language,
     poster: (poster && `${IMAGE_PREFIX}${poster}`) || undefined,
     backdrop: (backdrop && `${IMAGE_PREFIX}${backdrop}`) || undefined,
   };
 }
 
-export default async function name(src: string, id: string) {
-  const _id = id.toLowerCase().trim();
-  const file = await getFile(src);
-
-  const data = await lookupData(_id);
-
-  if (!data && !(await confirm('Data could not be found, continue?')))
-    return false;
-
-  let { title, year, poster, backdrop } = data || {};
-
-  if (!title) title = (await input('Title:')).trim();
-  if (!year) year = (await input('Year:')).trim();
-
-  if (!title) throw new Error('No title specified');
-  if (!year) throw new Error('No release year specified');
-
-  if (!poster && !(await confirm('Poster image could not be found, continue?')))
-    if (
-      !backdrop &&
-      (await confirm('Backdrop image could not be found, continue?'))
-    )
-      return false;
-
-  const streams = await chooseStreams(file);
-
-  if (streams.video === null) throw new Error('No video stream');
-  if (streams.audio === null) throw new Error('No audio stream');
-
-  const streamMapping: FfmpegArg[] = [
-    ['-map', `0:v:${streams.video.index}`],
-    ['-map', `0:a:${streams.audio.index}`],
-  ];
-
-  if (streams.sub !== null)
-    streamMapping.push(['-map', `0:s:${streams.sub.index}`]);
-
-  const name = `${title} (${year}) {imdb-${_id}}`;
-  const ext = path.parse(file).ext;
-
-  const dest = path.resolve(MOVIES_DIR, itemName(name, true));
-  const sameSrcDest = path.resolve(src) === dest;
-
-  if (await fs.exists(dest)) {
-    if (
-      !sameSrcDest &&
-      !(await confirm(`Destination already exists (${dest}), erase/overwrite?`))
-    ) {
-      return false;
-    }
-    !sameSrcDest && (await fs.remove(dest));
-  }
-
-  await fs.ensureDir(dest);
-
+async function downloadSubtitles({
+  src,
+  stream,
+  dest,
+  name,
+  language,
+}: {
+  src: string;
+  stream: ffmpeg.FfprobeStream;
+  dest: string;
+  name: string;
+  language?: string;
+}) {
   const fps =
-    (streams.video.stream.avg_frame_rate &&
-      eval(streams.video.stream.avg_frame_rate)) ||
-    undefined;
-  const subtitles = await getSubtitles(src, fps);
+    (stream.avg_frame_rate && eval(stream.avg_frame_rate)) || undefined;
+  const subtitles = await getSubtitles({ src, fps, language });
 
   if (subtitles.valid.length) {
-    console.log(
-      `Found forced subtitles, choose one or none (movie is ${fps} fps):`
-    );
+    console.log(`Found subtitles, choose one or none (movie is ${fps} fps):`);
     for (let i = 0; i < subtitles.valid.length; i++) {
       const subtitle = subtitles.valid[i];
       const {
@@ -223,21 +179,98 @@ export default async function name(src: string, id: string) {
       const subLink = await getSubtitleLink(subtitle);
       if (!subLink) throw new Error('Could not get subtitle download link');
 
-      const subExt = path.parse(subLink.file_name).ext.replace(/\./, '');
-      const subDest = path.resolve(dest, `${name}.en.forced.${subExt}`);
+      const subExt = path
+        .parse(subLink.file_name)
+        .ext.replace(/\./, '')
+        .toLowerCase();
+      const subDest = path.resolve(
+        dest,
+        `${name}.en.${subtitles.type}.${subExt}`
+      );
 
-      const subRes = await axios.get(subLink.link, {
-        responseType: 'arraybuffer',
+      const subRes = await promiseRetry((retry, number) => {
+        if (number !== 1) console.log('Trying again');
+        return axios
+          .get(subLink.link, {
+            responseType: 'arraybuffer',
+          })
+          .catch(retry);
       });
+
       const subData = Buffer.from(subRes.data, 'binary');
 
-      console.log('Downloading subs', subDest);
+      console.log(
+        `Downloading subs, ${subLink.remaining} downloads left`,
+        subDest
+      );
       await fs.writeFile(subDest, subData);
     }
   }
+}
+
+export default async function name(src: string, id: string) {
+  const _id = id.toLowerCase().trim();
+  const file = await getFile(src);
+  const data = await lookupData(_id);
+
+  if (!data && !(await confirm('Data could not be found, continue?')))
+    return false;
+
+  let { title, year, poster, backdrop, language } = data || {};
+
+  if (!title) title = (await input('Title:')).trim();
+  if (!year) year = (await input('Year:')).trim();
+
+  if (!title) throw new Error('No title specified');
+  if (!year) throw new Error('No release year specified');
+
+  if (!poster && !(await confirm('Poster image could not be found, continue?')))
+    if (
+      !backdrop &&
+      (await confirm('Backdrop image could not be found, continue?'))
+    )
+      return false;
+
+  const streams = await chooseStreams(file);
+
+  if (streams.video === null) throw new Error('No video stream');
+  if (streams.audio === null) throw new Error('No audio stream');
+
+  const name = `${title} (${year}) {imdb-${_id}}`;
+  const ext = path.parse(file).ext;
+
+  const dest = path.resolve(MOVIES_DIR, itemName(name, true));
+  const sameSrcDest = path.resolve(src) === dest;
+
+  if (await fs.exists(dest)) {
+    if (
+      !sameSrcDest &&
+      !(await confirm(`Destination already exists (${dest}), erase/overwrite?`))
+    ) {
+      return false;
+    }
+    !sameSrcDest && (await fs.remove(dest));
+  }
+
+  await fs.ensureDir(dest);
+  await downloadSubtitles({
+    src,
+    stream: streams.video.stream,
+    dest,
+    name: itemName(name),
+    language,
+  });
 
   if (poster) await saveArt(poster, path.resolve(dest, POSTER_FILE));
   if (backdrop) await saveArt(backdrop, path.resolve(dest, BACKDROP_FILE));
+
+  const streamMapping: FfmpegArg[] = [
+    ['-map', `0:v:${streams.video.index}`],
+    ['-map', `0:a:${streams.audio.index}`],
+  ];
+
+  if (streams.sub !== null)
+    streamMapping.push(['-map', `0:s:${streams.sub.index}`]);
 
   return runFfmpegCommand(
     ffmpeg(file).output(path.resolve(dest, `${itemName(name)}${ext}`)),
@@ -246,7 +279,7 @@ export default async function name(src: string, id: string) {
       ['-map_metadata', '-1'],
       ['-c', 'copy'],
       ['-metadata:s:v:0', `title=`],
-      ['-metadata:s:a:0', 'language=en'],
+      ['-metadata:s:a:0', `language=${data?.language || 'en'}`],
     ]
   );
 }
