@@ -39,25 +39,11 @@ const os = new OS({
   useragent: 'media-org v0.1.0',
 });
 
-export async function getSubtitles({
-  src,
-  fps,
-  language,
-}: {
-  src: string;
-  fps?: number;
-  language?: string;
-}) {
-  const id = src.match(/(tt\d+)/i);
-  if (!id) throw new Error('Could not find IMDb id');
-
-  const imdbId = id[0];
-  const forced = !language || language === 'en';
-
+export async function getSubtitles(id: string) {
   const subtitles = await getPaged(
     async ({ limit, offset }) => {
       const res = await os.subtitles({
-        imdb_id: imdbId,
+        imdb_id: id,
         page: offset / limit + 1,
       });
 
@@ -69,12 +55,11 @@ export async function getSubtitles({
     { limit: 50 }
   );
 
-  const valid = orderBy(
+  return orderBy(
     subtitles.filter((subtitle) => {
       const {
         attributes: {
           language: subLanguage,
-          foreign_parts_only,
           ai_translated,
           machine_translated,
           hearing_impaired,
@@ -83,9 +68,7 @@ export async function getSubtitles({
       if (ai_translated || machine_translated) return false;
       if (hearing_impaired) return false;
       if (subLanguage !== 'en') return false;
-
-      if (forced) return foreign_parts_only;
-      return !foreign_parts_only;
+      return true;
     }),
     (subtitle) => {
       const {
@@ -95,14 +78,6 @@ export async function getSubtitles({
     },
     'desc'
   );
-
-  const chosen = valid.findIndex((subtitle) => subtitle.attributes.fps === fps);
-
-  return {
-    valid,
-    chosen,
-    type: forced ? 'forced' : 'full',
-  };
 }
 
 export async function getSubtitleLink(subtitle: Subtitle) {

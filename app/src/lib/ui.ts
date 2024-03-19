@@ -1,4 +1,5 @@
 import readline from 'readline';
+import prompts from 'prompts';
 
 const AUTO_CONFIRM = process.env.AUTO_CONFIRM?.toLowerCase() === 'true';
 
@@ -8,11 +9,14 @@ async function question(message: string): Promise<string> {
     output: process.stdout,
   });
 
-  return new Promise((resolve) =>
-    rl.question(`${message} `, (ans) => {
-      rl.close();
-      resolve(ans);
-    })
+  return (
+    (
+      await prompts({
+        type: 'text',
+        name: 'question',
+        message,
+      })
+    ).question || ''
   );
 }
 
@@ -25,4 +29,18 @@ export function input(message: string) {
   if (AUTO_CONFIRM)
     throw new Error('Cannot use auto confirm when user input is required.');
   return question(message);
+}
+
+export async function choices<T>(
+  message: string,
+  choices: { title: string; value: T }[]
+): Promise<T | undefined> {
+  return (
+    await prompts({
+      type: 'select',
+      name: 'choice',
+      message,
+      choices,
+    })
+  ).choice;
 }

@@ -10,7 +10,7 @@ import {
   POSTER_FILE,
 } from '@/lib/config';
 import { getFileTypes, downloadImage } from '@/lib/fs';
-import { input, confirm } from '@/lib/ui';
+import { input, confirm, choices } from '@/lib/ui';
 import { runFfmpegCommand, probeMediaFile, type FfmpegArg } from '@/lib/media';
 import ffmpeg from '@/lib/ffmpeg';
 import { itemName } from '@/lib/namer';
@@ -64,26 +64,22 @@ async function getFile(src: string) {
 
 async function selectStream(
   name: 'video' | 'audio' | 'subtitle',
-  streams: ffmpeg.FfprobeStream[]
+  streams: ffmpeg.FfprobeStream[],
+  force?: boolean
 ) {
   if (!streams || !streams.length) return Promise.resolve(null);
 
-  if (streams.length === 1 && name !== 'subtitle') return 0;
+  if (streams.length === 1 && !force) return 0;
 
-  console.log(
-    `Select ${name} stream:\n${streams
-      .map(
-        (s, i) =>
-          `${i} - ${s.codec_long_name} (${s.tags?.language}${
-            s.tags?.title ? ` - ${s.tags?.title}` : ''
-          })`
-      )
-      .join('\n')}`
+  const r = await choices(
+    `Select ${name} stream`,
+    streams.map((s, i) => ({
+      title: `${s.tags?.language}${s.tags?.title ? ` - ${s.tags?.title}` : ''}`,
+      value: i,
+    }))
   );
 
-  const r = await input('#');
-
-  return r === '' ? null : Number(r);
+  return r !== undefined ? Number(r) : null;
 }
 
 async function chooseStreams(src: string) {
@@ -95,14 +91,15 @@ async function chooseStreams(src: string) {
 
   const video = await selectStream('video', videoStreams);
   const audio = await selectStream('audio', audioStreams);
-  const sub = await selectStream('subtitle', subStreams);
+  // const sub = await selectStream('subtitle', subStreams);
 
   return {
     video:
       video !== null ? { index: video, stream: videoStreams[video] } : null,
     audio:
       audio !== null ? { index: audio, stream: audioStreams[audio] } : null,
-    sub: sub !== null ? { index: sub, stream: subStreams[sub] } : null,
+    sub: subStreams,
+    // sub: sub !== null ? { index: sub, stream: subStreams[sub] } : null,
   };
 }
 
@@ -142,68 +139,107 @@ async function lookupData(id: string) {
 
 async function downloadSubtitles({
   src,
-  stream,
+  id,
+  streams,
   dest,
   name,
   language,
 }: {
   src: string;
-  stream: ffmpeg.FfprobeStream;
+  id: string;
+  streams: {
+    video: ffmpeg.FfprobeStream;
+    sub: ffmpeg.FfprobeStream[];
+  };
   dest: string;
   name: string;
   language?: string;
 }) {
   const fps =
-    (stream.avg_frame_rate && eval(stream.avg_frame_rate)) || undefined;
-  const subtitles = await getSubtitles({ src, fps, language });
+    (streams.video.avg_frame_rate && eval(streams.video.avg_frame_rate)) ||
+    undefined;
+  const subtitles = await getSubtitles(id);
 
-  if (subtitles.valid.length) {
-    console.log(`Found subtitles, choose one or none (movie is ${fps} fps):`);
-    for (let i = 0; i < subtitles.valid.length; i++) {
-      const subtitle = subtitles.valid[i];
-      const {
-        attributes: { fps, new_download_count, download_count, ratings, votes },
-      } = subtitle;
-      console.log(
-        `${i}: ${fps} fps, ${
-          new_download_count + download_count
-        } downloads, rated ${ratings} with ${votes} votes`
+  for (const type of ['full', 'forced']) {
+    let got = false;
+    const subDest = path.resolve(dest, `${name}.en.${type}.srt`);
+
+    if (streams.sub.length) {
+      const chosenSubtitleI = await choices(
+        `Choose ${type} subtitle stream from file, or none`,
+        streams.sub.map((s, i) => ({
+          title: `${[s.tags.language, s.tags.title]
+            .filter((s) => s !== undefined)
+            .join(', ')}`,
+          value: i,
+        }))
       );
+
+      if (chosenSubtitleI !== undefined) {
+        const chosenSubtitle = streams.sub[chosenSubtitleI];
+
+        if (!chosenSubtitle) throw new Error('Subtitle stream not found');
+
+        console.log(`Extracting ${type} subtitles to ${subDest}`);
+        await runFfmpegCommand(ffmpeg(src).output(subDest), [
+          ['-map', `0:s:${chosenSubtitleI}`],
+        ]);
+        got = true;
+      }
     }
 
-    const chosenSubtitle = await input('#');
+    const typeSubtitles = subtitles.filter((s) =>
+      type === 'full'
+        ? !s.attributes.foreign_parts_only
+        : s.attributes.foreign_parts_only
+    );
 
-    if (chosenSubtitle.length) {
-      const subtitle = subtitles.valid[Number(chosenSubtitle)];
-      if (!subtitle) throw new Error('Could not get chosen subtitle');
-      const subLink = await getSubtitleLink(subtitle);
-      if (!subLink) throw new Error('Could not get subtitle download link');
-
-      const subExt = path
-        .parse(subLink.file_name)
-        .ext.replace(/\./, '')
-        .toLowerCase();
-      const subDest = path.resolve(
-        dest,
-        `${name}.en.${subtitles.type}.${subExt}`
+    if (!got && typeSubtitles.length) {
+      const chosenSubtitleI = await choices(
+        `Choose ${type} subtitle stream from OpenSubtitles.com, or none. Movie is ${fps} fps`,
+        typeSubtitles.map((s, i) => {
+          const {
+            attributes: {
+              fps,
+              new_download_count,
+              download_count,
+              ratings,
+              votes,
+            },
+          } = s;
+          return {
+            title: `${fps} fps, ${
+              new_download_count + download_count
+            } downloads, rated ${ratings} with ${votes} votes`,
+            value: i,
+          };
+        })
       );
 
-      const subRes = await promiseRetry((retry, number) => {
-        if (number !== 1) console.log('Trying again');
-        return axios
-          .get(subLink.link, {
-            responseType: 'arraybuffer',
-          })
-          .catch(retry);
-      });
+      if (chosenSubtitleI !== undefined) {
+        const chosenSubtitle = typeSubtitles[chosenSubtitleI];
 
-      const subData = Buffer.from(subRes.data, 'binary');
+        if (!chosenSubtitle) throw new Error('Could not get chosen subtitle');
+        const subLink = await getSubtitleLink(chosenSubtitle);
+        if (!subLink) throw new Error('Could not get subtitle download link');
 
-      console.log(
-        `Downloading subs, ${subLink.remaining} downloads left`,
-        subDest
-      );
-      await fs.writeFile(subDest, subData);
+        const subRes = await promiseRetry((retry, number) => {
+          if (number !== 1) console.log('Trying again');
+          return axios
+            .get(subLink.link, {
+              responseType: 'arraybuffer',
+            })
+            .catch(retry);
+        });
+
+        const subData = Buffer.from(subRes.data, 'binary');
+
+        console.log(
+          `Downloading subs, ${subLink.remaining} downloads left`,
+          subDest
+        );
+        await fs.writeFile(subDest, subData);
+      }
     }
   }
 }
@@ -253,13 +289,20 @@ export default async function name(src: string, id: string) {
   }
 
   await fs.ensureDir(dest);
+
   await downloadSubtitles({
-    src,
-    stream: streams.video.stream,
+    src: file,
+    id: _id,
+    streams: {
+      video: streams.video.stream,
+      sub: streams.sub,
+    },
     dest,
     name: itemName(name),
     language,
   });
+
+  return false;
 
   if (poster) await saveArt(poster, path.resolve(dest, POSTER_FILE));
   if (backdrop) await saveArt(backdrop, path.resolve(dest, BACKDROP_FILE));
