@@ -237,7 +237,7 @@ export default async function name(src: string, id: string) {
   if (streams.audio === null) throw new Error('No audio stream');
 
   const name = `${title} (${year}) {imdb-${_id}}`;
-  const ext = path.parse(file).ext;
+  const ext = path.parse(file).ext.toLowerCase().trim().replace(/^\./, '');
 
   const dest = path.resolve(MOVIES_DIR, itemName(name, true));
   const sameSrcDest = path.resolve(src) === dest;
@@ -273,7 +273,9 @@ export default async function name(src: string, id: string) {
     streamMapping.push(['-map', `0:s:${streams.sub.index}`]);
 
   return runFfmpegCommand(
-    ffmpeg(file).output(path.resolve(dest, `${itemName(name)}${ext}`)),
+    ffmpeg(file)
+      .inputOptions(ext === 'avi' ? ['-fflags +genpts'] : [])
+      .output(path.resolve(dest, `${itemName(name)}.mkv`)),
     [
       ...streamMapping,
       ['-map_metadata', '-1'],
