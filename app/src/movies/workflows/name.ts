@@ -94,6 +94,7 @@ async function chooseStreams(src: string) {
   // const sub = await selectStream('subtitle', subStreams);
 
   return {
+    chapters: data.chapters,
     video:
       video !== null ? { index: video, stream: videoStreams[video] } : null,
     audio:
@@ -272,6 +273,12 @@ export default async function name(src: string, id: string) {
   if (streams.video === null) throw new Error('No video stream');
   if (streams.audio === null) throw new Error('No audio stream');
 
+  if (
+    streams.chapters.length <= 1 &&
+    (await confirm('<= 1 Chapter, continue?'))
+  )
+    return false;
+
   const name = `${title} (${year}) {imdb-${_id}}`;
   const ext = path.parse(file).ext.toLowerCase().trim().replace(/^\./, '');
 
@@ -302,8 +309,6 @@ export default async function name(src: string, id: string) {
     language,
   });
 
-  return false;
-
   if (poster) await saveArt(poster, path.resolve(dest, POSTER_FILE));
   if (backdrop) await saveArt(backdrop, path.resolve(dest, BACKDROP_FILE));
 
@@ -311,9 +316,6 @@ export default async function name(src: string, id: string) {
     ['-map', `0:v:${streams.video.index}`],
     ['-map', `0:a:${streams.audio.index}`],
   ];
-
-  if (streams.sub !== null)
-    streamMapping.push(['-map', `0:s:${streams.sub.index}`]);
 
   return runFfmpegCommand(
     ffmpeg(file)

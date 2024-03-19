@@ -5,7 +5,7 @@ export type FfmpegArg = [string, string];
 
 export function probeMediaFile(file: string): Promise<FfprobeData> {
   return new Promise((resolve, reject) => {
-    ffmpeg(file).ffprobe((err, data) => {
+    ffmpeg(file).ffprobe(['-show_chapters'], (err, data) => {
       if (err) return reject(err);
       resolve(data);
     });
