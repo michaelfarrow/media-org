@@ -306,7 +306,7 @@ export default async function name(src: string, id: string) {
 
   if (
     !streams.audio.stream.codec_name ||
-    (streams.audio.stream.codec_name !== 'ac3' &&
+    (!['ac3', 'dts'].includes(streams.audio.stream.codec_name) &&
       !(await confirm(
         `Audio not aac/ac3 (${streams.audio.stream.codec_name}), continue?`
       )))
@@ -315,9 +315,9 @@ export default async function name(src: string, id: string) {
 
   if (
     !streams.audio.stream.channels ||
-    (streams.audio.stream.channels !== 6 &&
+    (streams.audio.stream.channels < 6 &&
       !(await confirm(
-        `Audio not 5.1 surround sound (${streams.audio.stream.channels} channels), continue?`
+        `Audio not 5.1 surround sound or better (${streams.audio.stream.channels} channels), continue?`
       )))
   )
     return false;
@@ -358,6 +358,7 @@ export default async function name(src: string, id: string) {
   const streamMapping: FfmpegArg[] = [
     ['-map', `0:v:${streams.video.index}`],
     ['-map', `0:a:${streams.audio.index}`],
+    ['-map', `0:a:${streams.audio.index}`],
   ];
 
   return runFfmpegCommand(
@@ -367,9 +368,15 @@ export default async function name(src: string, id: string) {
     [
       ...streamMapping,
       ['-map_metadata', '-1'],
-      ['-c', 'copy'],
+      ['-c:v', 'copy'],
+      ['-c:a:0', 'aac'],
+      ['-c:a:1', 'copy'],
+      ['-ac', '2'],
+      ['-filter:a:0', 'loudnorm'],
+      ['-ar:a:0', '48000'],
+      ['-b:a:0', '320k'],
       ['-metadata:s:v:0', `title=`],
-      ['-metadata:s:a:0', `language=${data?.language || 'en'}`],
+      ['-metadata:s:a', `language=${data?.language || 'en'}`],
     ]
   );
 }
