@@ -308,7 +308,7 @@ export default async function name(src: string, id: string) {
     !streams.audio.stream.codec_name ||
     (streams.audio.stream.codec_name !== 'ac3' &&
       !(await confirm(
-        `Video not aac/ac3 (${streams.audio.stream.codec_name}), continue?`
+        `Audio not aac/ac3 (${streams.audio.stream.codec_name}), continue?`
       )))
   )
     return false;
