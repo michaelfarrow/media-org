@@ -74,7 +74,9 @@ async function selectStream(
   const r = await choices(
     `Select ${name} stream`,
     streams.map((s, i) => ({
-      title: `${s.tags?.language}${s.tags?.title ? ` - ${s.tags?.title}` : ''}`,
+      title: [s.codec_name, s.tags.language, s.tags.title]
+        .filter((s) => s !== undefined && s !== 'unknown')
+        .join(', '),
       value: i,
     }))
   );
@@ -182,8 +184,13 @@ async function downloadSubtitles({
         if (!chosenSubtitle) throw new Error('Subtitle stream not found');
 
         console.log(`Extracting ${type} subtitles to ${subDest}`);
+
+        const extraArgs: FfmpegArg[] =
+          chosenSubtitle.codec_name === 'subrip' ? [['-c', 'copy']] : [];
+
         await runFfmpegCommand(ffmpeg(src).output(subDest), [
           ['-map', `0:s:${chosenSubtitleI}`],
+          ...extraArgs,
         ]);
         got = true;
       }
@@ -275,7 +282,43 @@ export default async function name(src: string, id: string) {
 
   if (
     streams.chapters.length <= 1 &&
-    (await confirm('<= 1 Chapter, continue?'))
+    !(await confirm('<= 1 Chapter, continue?'))
+  )
+    return false;
+
+  if (
+    !streams.video.stream.codec_name ||
+    (streams.video.stream.codec_name !== 'h264' &&
+      !(await confirm(
+        `Video not h.264 (${streams.video.stream.codec_name}), continue?`
+      )))
+  )
+    return false;
+
+  if (
+    !streams.video.stream.width ||
+    (streams.video.stream.width < 1280 &&
+      !(await confirm(
+        `Video not 720p (${streams.video.stream.width}), continue?`
+      )))
+  )
+    return false;
+
+  if (
+    !streams.audio.stream.codec_name ||
+    (streams.audio.stream.codec_name !== 'ac3' &&
+      !(await confirm(
+        `Video not aac/ac3 (${streams.audio.stream.codec_name}), continue?`
+      )))
+  )
+    return false;
+
+  if (
+    !streams.audio.stream.channels ||
+    (streams.audio.stream.channels !== 6 &&
+      !(await confirm(
+        `Audio not 5.1 surround sound (${streams.audio.stream.channels} channels), continue?`
+      )))
   )
     return false;
 
