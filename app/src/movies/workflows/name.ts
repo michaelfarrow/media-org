@@ -372,7 +372,11 @@ export default async function name(src: string, id: string) {
       ['-c:a:0', 'libfdk_aac'],
       ['-c:a:1', 'copy'],
       ['-ac', '2'],
-      ['-filter:a:0', 'loudnorm'],
+      // ['-filter:a:0', 'loudnorm'],
+      [
+        '-filter:a:1',
+        'pan=stereo|FL=FC+0.30*FL+0.30*FLC+0.30*BL+0.30*SL+0.60*LFE|FR=FC+0.30*FR+0.30*FRC+0.30*BR+0.30*SR+0.60*LFE',
+      ],
       ['-ar:a:0', '48000'],
       ['-b:a:0', '320k'],
       ['-ac', '2'],
