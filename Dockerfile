@@ -16,8 +16,11 @@ FROM node:20.11.1-slim as common
 
 WORKDIR /app
 
+RUN echo "deb http://http.us.debian.org/debian stable main contrib non-free" | tee -a /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install -y shntool flac cuetools
+RUN apt-get install -y i965-va-driver-shaders
+RUN apt-get install -y mkvtoolnix
 
 ENV LD_LIBRARY_PATH=/usr/local/lib
 COPY --from=ffmpeg /usr/local /usr/local/
