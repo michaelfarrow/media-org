@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import axios from 'axios';
 import { type Item, downloadImage } from '@/lib/fs';
-import { ARTIST_FILE, MUSIC_LOSSESS_DIR } from '@/lib/config';
+import { ARTIST_FILE, MUSIC_COMPRESSED_DIR } from '@/lib/config';
 
 import processArtists from './shared/process-artists';
 
@@ -79,7 +79,7 @@ function artistArtPath(artist: Item) {
 }
 
 export default async function art() {
-  return processArtists(MUSIC_LOSSESS_DIR, {
+  return processArtists(MUSIC_COMPRESSED_DIR, {
     async shouldProcessArtist(artist) {
       return !(await fs.exists(artistArtPath(artist)));
     },
