@@ -1,9 +1,8 @@
 import path from 'path';
 import fs from 'fs-extra';
 import axios from 'axios';
-import sharp from 'sharp';
 import { type Item, downloadImage } from '@/lib/fs';
-import { MUSIC_COMPRESSED_DIR, ARTIST_FILE } from '@/lib/config';
+import { ARTIST_FILE, MUSIC_LOSSESS_DIR } from '@/lib/config';
 
 import processArtists from './shared/process-artists';
 
@@ -72,7 +71,7 @@ async function getArt(artist: string, id?: string) {
 
 async function saveArt(src: string, dest: string) {
   console.log('SAVE', src, dest);
-  return downloadImage(src, dest, 100);
+  return downloadImage(src, dest, 95);
 }
 
 function artistArtPath(artist: Item) {
@@ -80,7 +79,7 @@ function artistArtPath(artist: Item) {
 }
 
 export default async function art() {
-  return processArtists(MUSIC_COMPRESSED_DIR, {
+  return processArtists(MUSIC_LOSSESS_DIR, {
     async shouldProcessArtist(artist) {
       return !(await fs.exists(artistArtPath(artist)));
     },

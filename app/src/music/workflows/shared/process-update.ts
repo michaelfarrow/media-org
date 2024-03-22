@@ -53,7 +53,7 @@ async function convertCoverFile(dir: string) {
       // TODO: check cover sizing
       console.log('Converting', fileSrc, '>', fileDest);
 
-      const cover = sharp(fileSrc).jpeg({ quality: 100 });
+      const cover = sharp(fileSrc).jpeg({ quality: 85 });
       const coverMeta = await cover.metadata();
 
       if (!coverMeta.width || !coverMeta.height) {
