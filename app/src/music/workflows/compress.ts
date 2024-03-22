@@ -1,15 +1,50 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { RELEASE_FILE, COVER_FILE } from '@/lib/config';
+import { RELEASE_FILE, COVER_FILES_TO_CONVERT, COVER_FILE } from '@/lib/config';
 import { type File, getFileTypes } from '@/lib/fs';
 import { confirm } from '@/lib/ui';
 import { Release, releasePath, trackFileName } from '@/lib/namer';
 import { convertToM4a } from '@/lib/audio';
 import { diffWords } from 'diff';
 import colors from 'colors';
+import sharp from 'sharp';
 
 export interface Options {
   skipComplete?: boolean;
+}
+
+const COVER_RESIZE = 1417;
+
+async function convertCoverFile(src: string, dest: string) {
+  for (const copyFile of COVER_FILES_TO_CONVERT) {
+    const fileSrc = path.resolve(src, copyFile);
+    const fileDest = path.resolve(dest, COVER_FILE);
+    if (await fs.exists(fileSrc)) {
+      // TODO: check cover sizing
+      console.log('Converting', fileSrc, '>', fileDest);
+
+      const cover = sharp(fileSrc).jpeg({ quality: 85 });
+      const coverMeta = await cover.metadata();
+
+      if (!coverMeta.width || !coverMeta.height) {
+        if (
+          !(await confirm('Cannot read cover width and/or height, continue?'))
+        )
+          return false;
+      }
+
+      const size = Math.min(
+        coverMeta.width || COVER_RESIZE,
+        coverMeta.height || COVER_RESIZE,
+        COVER_RESIZE
+      );
+
+      cover.resize(size, size, { fit: 'fill' });
+      await cover.toFile(fileDest);
+
+      break;
+    }
+  }
 }
 
 // Warn if anything is to be overriden
@@ -18,8 +53,7 @@ export interface Options {
 async function processTracks(
   files: File[],
   release: Release,
-  releaseDest: string,
-  coverFile: string
+  releaseDest: string
 ) {
   const discs = release.discs;
   const discCount = discs.length;
@@ -54,11 +88,6 @@ async function processTracks(
       });
     }
   }
-
-  const coverFileDest = path.resolve(releaseDest, COVER_FILE);
-
-  console.log('Copying', coverFile, '>', coverFileDest);
-  await fs.copyFile(coverFile, coverFileDest);
 }
 
 export default async function compress(
@@ -68,7 +97,6 @@ export default async function compress(
 ) {
   const { skipComplete } = options;
 
-  const coverFile = path.resolve(src, COVER_FILE);
   const releaseFile = path.resolve(src, RELEASE_FILE);
 
   if (!(await fs.exists(src)))
@@ -77,8 +105,18 @@ export default async function compress(
   if (!(await fs.exists(releaseFile)))
     throw new Error(`Release file does not exist: ${releaseFile}`);
 
-  if (!(await fs.exists(coverFile)))
-    throw new Error(`Cover file does not exist: ${coverFile}`);
+  let foundCover = false;
+  for (const file of COVER_FILES_TO_CONVERT) {
+    if (await fs.exists(path.resolve(src, file))) {
+      foundCover = true;
+      break;
+    }
+  }
+
+  if (!foundCover) {
+    console.log(`Cover file not found`);
+    return false;
+  }
 
   const release = Release.parse(await fs.readJson(releaseFile));
   const releaseDest = path.resolve(dest, releasePath(release));
@@ -144,7 +182,8 @@ export default async function compress(
   }
 
   await fs.ensureDir(releaseDest);
-  await processTracks(files, release, releaseDest, coverFile);
+  await processTracks(files, release, releaseDest);
+  await convertCoverFile(src, releaseDest);
 
   return releaseDest;
 }

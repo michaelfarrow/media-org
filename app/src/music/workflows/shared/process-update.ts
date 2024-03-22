@@ -1,9 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
-import sharp from 'sharp';
 import {
   RELEASE_FILE,
-  COVER_FILE,
   COVER_FILES,
   COVER_FILES_TO_CONVERT,
   SOURCE_FLAG_FILES,
@@ -22,8 +20,6 @@ import {
 } from '@/lib/namer';
 import { confirm } from '@/lib/ui';
 
-const COVER_RESIZE = 1417;
-
 export type ProcessTrack = (track: File, dest: string) => Promise<boolean>;
 
 export interface Options {
@@ -41,38 +37,6 @@ async function copyFiles(src: string, dest: string, files: string[]) {
     if (fileSrc !== fileDest && (await fs.exists(fileSrc))) {
       console.log('Copying', fileSrc, '>', fileDest);
       await fs.copyFile(fileSrc, fileDest);
-    }
-  }
-}
-
-async function convertCoverFile(dir: string) {
-  for (const copyFile of COVER_FILES_TO_CONVERT) {
-    const fileSrc = path.resolve(dir, copyFile);
-    const fileDest = path.resolve(dir, COVER_FILE);
-    if (await fs.exists(fileSrc)) {
-      // TODO: check cover sizing
-      console.log('Converting', fileSrc, '>', fileDest);
-
-      const cover = sharp(fileSrc).jpeg({ quality: 85 });
-      const coverMeta = await cover.metadata();
-
-      if (!coverMeta.width || !coverMeta.height) {
-        if (
-          !(await confirm('Cannot read cover width and/or height, continue?'))
-        )
-          return false;
-      }
-
-      const size = Math.min(
-        coverMeta.width || COVER_RESIZE,
-        coverMeta.height || COVER_RESIZE,
-        COVER_RESIZE
-      );
-
-      cover.resize(size, size, { fit: 'fill' });
-      await cover.toFile(fileDest);
-
-      break;
     }
   }
 }
@@ -190,7 +154,6 @@ export default async function processUpdate(
   await processTracks(files, release, releaseDest, processTrack);
   await copyFiles(src, releaseDest, COVER_FILES);
   await copyFiles(src, releaseDest, SOURCE_FLAG_FILES);
-  await convertCoverFile(releaseDest);
   await outputInfoFile(release, releaseDest);
 
   postProcess && (await postProcess(releaseDest));
