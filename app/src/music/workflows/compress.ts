@@ -7,7 +7,6 @@ import { Release, releasePath, trackFileName } from '@/lib/namer';
 import { convertToM4a } from '@/lib/audio';
 import { diffWords } from 'diff';
 import colors from 'colors';
-import sharp from 'sharp';
 
 export interface Options {
   skipComplete?: boolean;
@@ -58,8 +57,8 @@ async function processTracks(
 
   const coverFileDest = path.resolve(releaseDest, COVER_FILE);
 
-  console.log('Compressing', coverFile, '>', coverFileDest);
-  await sharp(coverFile).jpeg({ quality: 85 }).toFile(coverFileDest);
+  console.log('Copying', coverFile, '>', coverFileDest);
+  await fs.copyFile(coverFile, coverFileDest);
 }
 
 export default async function compress(
