@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# for d in /media/movies/*/ ; do
+#     [ -L "${d%/}" ] && continue
+#     [ "$d" == "/media/movies/temp/" ] && continue
+
+#     find "$d" -regex ".*\.\(mkv\|avi\|mp4\)" -print0 | while read -d $'\0' file
+#     do
+#         stream="$(ffprobe -i "$file" -show_streams -select_streams s -hide_banner -loglevel error)"
+
+#         echo "s-$stream"
+
+#         if [ "$stream" != "" ]
+#         then
+#             mkdir -p /media/movies/temp/
+#             echo "$d"
+#             echo "$stream"
+#             mv "$d" "/media/movies/temp/"
+#         fi
+#     done
+
+# done
+
+# for d in /media/movies/*/ ; do
+#     [ -L "${d%/}" ] && continue
+#     [ "$d" == "/media/movies/temp/" ] && continue
+
+#     pushd "$d"
+#     count=`ls -1 *.mp4 2>/dev/null | wc -l`
+#     if [ $count != 0 ]
+#         then 
+#         mkdir -p /media/movies/temp/
+#         mv "$d" "/media/movies/temp/"
+#     fi 
+#     popd
+
+#     # find "$d" -regex ".*\.\(mkv\|avi\|mp4\)" -print0 | while read -d $'\0' file
+#     # do
+#     #     stream="$(ffprobe -i "$file" -show_streams -select_streams s -hide_banner -loglevel error)"
+
+#     #     echo "s-$stream"
+
+#     #     if [ "$stream" != "" ]
+#     #     then
+#     #         mkdir -p /media/movies/temp/
+#     #         echo "$d"
+#     #         echo "$stream"
+#     #         mv "$d" "/media/movies/temp/"
+#     #     fi
+#     # done
+
+# done
+
+
+
+for d in /media/movies/temp/*/ ; do
+    [ -L "${d%/}" ] && continue
+    [ "$d" == "/media/movies/temp/" ] && continue
+
+    pushd "$d"
+
+    movies name
+
+    popd
+
+done
