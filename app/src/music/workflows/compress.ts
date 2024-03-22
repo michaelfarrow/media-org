@@ -40,7 +40,7 @@ async function processTracks(
       );
 
       await convertToM4a(trackSrc, trackDest, {
-        bitRate: 320,
+        bitRate: 256,
         // cover: coverFile,
         tags: {
           artist: track.artists.join('; '),
