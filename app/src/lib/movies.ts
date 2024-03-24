@@ -11,6 +11,7 @@ export type Subtitle = {
   id: string;
   type: string;
   attributes: {
+    release: string;
     language: string;
     hearing_impaired: boolean;
     from_trusted: boolean;

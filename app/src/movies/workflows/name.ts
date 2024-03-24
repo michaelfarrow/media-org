@@ -208,17 +208,21 @@ async function downloadSubtitles({
         typeSubtitles.map((s, i) => {
           const {
             attributes: {
+              release,
               fps,
               new_download_count,
               download_count,
               ratings,
               votes,
+              from_trusted,
             },
           } = s;
           return {
-            title: `${fps} fps, ${
+            title: `${fps} fps, ${release}, ${
               new_download_count + download_count
-            } downloads, rated ${ratings} with ${votes} votes`,
+            } downloads, rated ${ratings} with ${votes} votes${
+              from_trusted ? ' [TRUSTED]' : ''
+            }`,
             value: i,
           };
         })
