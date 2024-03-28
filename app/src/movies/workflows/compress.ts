@@ -24,7 +24,7 @@ export default async function compress(src: string) {
 
         const tempPath = path.resolve(
           file.dir,
-          `${file.nameWithoutExt}- temp.${file.ext}`
+          `${file.nameWithoutExt} - temp.${file.ext}`
         );
 
         await runFfmpegCommand(ffmpeg(file.path).output(tempPath), [

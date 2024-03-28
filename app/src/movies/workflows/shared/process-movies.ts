@@ -19,15 +19,15 @@ export async function processMovies(
 
   for (const movieDir of movieDirs) {
     const movieFiles = (await getFileTypes(movieDir.path, MOVIE_TYPES)).filter(
-      (file) => !file.nameWithoutExt.endsWith('- temp')
+      (file) => !file.nameWithoutExt.endsWith(' - temp')
     );
 
     const normalMovieFiles = movieFiles.filter(
-      (file) => !file.nameWithoutExt.endsWith('- original')
+      (file) => !file.nameWithoutExt.endsWith(' - original')
     );
 
     const originalMovieFiles = movieFiles.filter((file) =>
-      file.nameWithoutExt.endsWith('- original')
+      file.nameWithoutExt.endsWith(' - original')
     );
 
     if (!movieFiles.length)
