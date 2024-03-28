@@ -14,22 +14,17 @@ export default async function compress(src: string) {
       MOVIE_AUDIO_TYPES.includes(streams.audio.codec_name || '')
     ) {
       if (
-        !file.nameWithoutExt.endsWith('- original') &&
+        !file.nameWithoutExt.startsWith('.') &&
         data.format.tags?.COMPRESSED !== 'yes'
       ) {
         const originalPath = path.resolve(
           file.dir,
-          `${file.nameWithoutExt} - original.${file.ext}`
-        );
-
-        const compressedPath = path.resolve(
-          file.dir,
-          `${file.nameWithoutExt} - compressed.${file.ext}`
+          `.${file.nameWithoutExt}.${file.ext}`
         );
 
         const tempPath = path.resolve(
           file.dir,
-          `${file.nameWithoutExt} - temp.${file.ext}`
+          `.${file.nameWithoutExt}.temp.${file.ext}`
         );
 
         await runFfmpegCommand(ffmpeg(file.path).output(tempPath), [
@@ -46,7 +41,7 @@ export default async function compress(src: string) {
         ]);
 
         await fs.rename(file.path, originalPath);
-        await fs.rename(tempPath, compressedPath);
+        await fs.rename(tempPath, file.path);
       }
     }
   });
