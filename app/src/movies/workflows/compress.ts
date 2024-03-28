@@ -14,17 +14,17 @@ export default async function compress(src: string) {
       MOVIE_AUDIO_TYPES.includes(streams.audio.codec_name || '')
     ) {
       if (
-        !file.nameWithoutExt.match(/\.original$/) &&
+        !file.nameWithoutExt.endsWith('- original') &&
         data.format.tags?.COMPRESSED !== 'yes'
       ) {
         const originalPath = path.resolve(
           file.dir,
-          `${file.nameWithoutExt}.original.${file.ext}`
+          `${file.nameWithoutExt} - original.${file.ext}`
         );
 
         const tempPath = path.resolve(
           file.dir,
-          `${file.nameWithoutExt}.temp.${file.ext}`
+          `${file.nameWithoutExt}- temp.${file.ext}`
         );
 
         await runFfmpegCommand(ffmpeg(file.path).output(tempPath), [
@@ -32,7 +32,7 @@ export default async function compress(src: string) {
           ['-c:a', 'copy'],
           ['-c:s', 'copy'],
           ['-c:v', 'libx264'],
-          ['-crf', '16'],
+          ['-crf', '17'],
           ['-preset', 'medium'],
           ['-vf', 'scale=1280:-2'],
           ['-g', '30'], // Set i-frames every 30 frames to speed up scrubbing
