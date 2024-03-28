@@ -30,8 +30,8 @@ export default async function compress(src: string) {
           ['-c:s', 'copy'],
           ['-c:v', 'libx264'],
           ['-crf', '16'],
-          ['-vf', 'scale=1280:-2'],
           ['-profile', 'medium'],
+          ['-vf', 'scale=1280:-2'],
           ['-g', '30'], // Set i-frames every 30 frames to speed up scrubbing
         ]);
 
