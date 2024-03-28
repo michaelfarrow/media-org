@@ -22,6 +22,11 @@ export default async function compress(src: string) {
           `${file.nameWithoutExt} - original.${file.ext}`
         );
 
+        const compressedPath = path.resolve(
+          file.dir,
+          `${file.nameWithoutExt} - compressed.${file.ext}`
+        );
+
         const tempPath = path.resolve(
           file.dir,
           `${file.nameWithoutExt} - temp.${file.ext}`
@@ -41,7 +46,7 @@ export default async function compress(src: string) {
         ]);
 
         await fs.rename(file.path, originalPath);
-        await fs.rename(tempPath, file.path);
+        await fs.rename(tempPath, compressedPath);
       }
     }
   });
