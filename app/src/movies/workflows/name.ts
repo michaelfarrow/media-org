@@ -5,6 +5,7 @@ import { MovieDb, ExternalId, type MovieResult } from 'moviedb-promise';
 import promiseRetry from 'promise-retry';
 import {
   MOVIE_TYPES,
+  MOVIE_AUDIO_TYPES,
   MOVIES_DIR,
   BACKDROP_FILE,
   POSTER_FILE,
@@ -310,9 +311,11 @@ export default async function name(src: string, id: string) {
 
   if (
     !streams.audio.stream.codec_name ||
-    (!['ac3', 'dts'].includes(streams.audio.stream.codec_name) &&
+    (!MOVIE_AUDIO_TYPES.includes(streams.audio.stream.codec_name) &&
       !(await confirm(
-        `Audio not aac/ac3 (${streams.audio.stream.codec_name}), continue?`
+        `Audio not ${MOVIE_AUDIO_TYPES.join('/')} (${
+          streams.audio.stream.codec_name
+        }), continue?`
       )))
   )
     return false;

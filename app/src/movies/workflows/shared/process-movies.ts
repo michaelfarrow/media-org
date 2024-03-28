@@ -18,12 +18,22 @@ export async function processMovies(
   const movieDirs = await getDirs(src);
 
   for (const movieDir of movieDirs) {
-    const movieFiles = await getFileTypes(movieDir.path, MOVIE_TYPES);
+    const movieFiles = (await getFileTypes(movieDir.path, MOVIE_TYPES)).filter(
+      (file) => !file.nameWithoutExt.match(/.temp$/)
+    );
+
+    const normalMovieFiles = movieFiles.filter(
+      (file) => !file.nameWithoutExt.match(/.original$/)
+    );
+
+    const originalMovieFiles = movieFiles.filter((file) =>
+      file.nameWithoutExt.match(/.original$/)
+    );
 
     if (!movieFiles.length)
       throw new Error(`Cannot find any movie files at "${movieDir}"`);
 
-    const movieFile = movieFiles[0];
+    const movieFile = originalMovieFiles[0] || normalMovieFiles[0];
 
     const data = await probeMediaFile(movieFile.path);
 
@@ -44,15 +54,15 @@ export async function processMovies(
 
     if (!audioStreams.length)
       throw new Error(`Cannot find any audio streams in "${movieFile.path}"`);
-    if (audioStreams.length > 1)
+    if (audioStreams.length > 2)
       throw new Error(`Too many audio streams in "${movieFile.path}"`);
 
     await process({
-      file: movieFiles[0],
+      file: movieFile,
       data,
       streams: {
         video: videoStreams[0],
-        audio: audioStreams[0],
+        audio: audioStreams[audioStreams.length - 1],
         sub: subStreams,
       },
     });

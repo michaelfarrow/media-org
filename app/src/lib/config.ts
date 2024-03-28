@@ -16,6 +16,7 @@ export const ARTIST_FILE = 'artist.jpg';
 export const SOURCE_FLAG_FILES = ['src-mp3', 'src-possible-mp3'];
 
 export const MOVIE_TYPES = ['mp4', 'avi', 'mkv', 'm4v'];
+export const MOVIE_AUDIO_TYPES = ['ac3', 'eac3', 'dts'];
 export const MOVIES_DIR = `${MEDIA_DIR}/movies`;
 export const POSTER_FILE = 'poster.jpg';
 export const BACKDROP_FILE = 'backdrop.jpg';
