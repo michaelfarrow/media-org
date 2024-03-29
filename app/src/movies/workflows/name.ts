@@ -391,6 +391,7 @@ export default async function name(src: string, id: string) {
       ['-afterburner', '1'],
       ['-metadata:s:v:0', `title=`],
       ['-metadata:s:a', `language=${data?.language || 'en'}`],
+      ['-metadata', 'CHECKED=yes'],
     ]
   );
 }
