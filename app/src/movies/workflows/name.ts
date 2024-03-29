@@ -365,7 +365,7 @@ export default async function name(src: string, id: string) {
   const streamMapping: FfmpegArg[] = [
     ['-map', `0:v:${streams.video.index}`],
     ['-map', `0:a:${streams.audio.index}`],
-    ['-map', `0:a:${streams.audio.index}`],
+    // ['-map', `0:a:${streams.audio.index}`],
   ];
 
   return runFfmpegCommand(
@@ -376,19 +376,20 @@ export default async function name(src: string, id: string) {
       ...streamMapping,
       ['-map_metadata', '-1'],
       ['-c:v', 'copy'],
-      ['-c:a:0', 'libfdk_aac'],
-      ['-c:a:1', 'copy'],
+      ['-c:a', 'copy'],
+      // ['-c:a:0', 'libfdk_aac'],
+      // ['-c:a:1', 'copy'],
       // ['-filter:a:0', 'loudnorm'],
-      [
-        '-filter:a:0',
-        'pan=stereo|FL=FC+0.30*FL+0.30*FLC+0.30*BL+0.30*SL+0.60*LFE|FR=FC+0.30*FR+0.30*FRC+0.30*BR+0.30*SR+0.60*LFE',
-      ],
-      ['-ar:a:0', '48000'],
-      ['-b:a:0', '320k'],
-      ['-ac', '2'],
-      ['-cutoff', '20000'],
-      ['-vbr', '0'],
-      ['-afterburner', '1'],
+      // [
+      //   '-filter:a:0',
+      //   'pan=stereo|FL=FC+0.30*FL+0.30*FLC+0.30*BL+0.30*SL+0.60*LFE|FR=FC+0.30*FR+0.30*FRC+0.30*BR+0.30*SR+0.60*LFE',
+      // ],
+      // ['-ar:a:0', '48000'],
+      // ['-b:a:0', '320k'],
+      // ['-ac', '2'],
+      // ['-cutoff', '20000'],
+      // ['-vbr', '0'],
+      // ['-afterburner', '1'],
       ['-metadata:s:v:0', `title=`],
       ['-metadata:s:a', `language=${data?.language || 'en'}`],
       ['-metadata', 'CHECKED=yes'],

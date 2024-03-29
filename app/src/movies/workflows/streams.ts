@@ -11,18 +11,22 @@ export default async function subtitles(src: string) {
       video.codec_name,
       `${Math.round(
         ((data.format.bit_rate || 0) -
-          ((audio.bit_rate && Number(audio.bit_rate)) || 0)) /
+          ((video.bit_rate && Number(video.bit_rate)) || 0)) /
           1000
       )}kb/s`,
       `${video.width}x${video.height}`
     );
-    console.log(
-      'AUDIO',
-      audio.codec_name,
-      `${Math.round(
-        ((audio.bit_rate && Number(audio.bit_rate)) || 0) / 1000
-      )}kb/s`
-    );
+    for (const stream of audio) {
+      console.log(
+        'AUDIO',
+        stream.codec_name,
+        `${Math.round(
+          ((data.format.bit_rate || 0) -
+            ((stream.bit_rate && Number(stream.bit_rate)) || 0)) /
+            1000
+        )}kb/s`
+      );
+    }
     // sub.forEach((subStream) => {
     //   console.log('SUB', subStream);
     // });

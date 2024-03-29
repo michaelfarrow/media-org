@@ -10,7 +10,7 @@ export async function processMovies(
     data: ffmpeg.FfprobeData;
     streams: {
       video: ffmpeg.FfprobeStream;
-      audio: ffmpeg.FfprobeStream;
+      audio: ffmpeg.FfprobeStream[];
       sub: ffmpeg.FfprobeStream[];
     };
   }) => Promise<any>
@@ -62,7 +62,7 @@ export async function processMovies(
       data,
       streams: {
         video: videoStreams[0],
-        audio: audioStreams[audioStreams.length - 1],
+        audio: audioStreams,
         sub: subStreams,
       },
     });

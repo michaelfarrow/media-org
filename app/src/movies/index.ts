@@ -2,6 +2,7 @@ import { Command } from '@commander-js/extra-typings';
 import name from './commands/name';
 import subtitles from './commands/subtitles';
 import compress from './commands/compress';
+import update from './commands/update';
 import streams from './commands/streams';
 
 const program = new Command();
@@ -24,6 +25,10 @@ program.command('subtitles').action(async () => {
 
 program.command('compress').action(async () => {
   await compress();
+});
+
+program.command('update').action(async () => {
+  await update();
 });
 
 program.command('streams').action(async () => {
