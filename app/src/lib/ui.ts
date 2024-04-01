@@ -1,46 +1,46 @@
-import readline from 'readline';
-import prompts from 'prompts';
+import inquirer from 'inquirer';
 
 const AUTO_CONFIRM = process.env.AUTO_CONFIRM?.toLowerCase() === 'true';
 
-async function question(message: string): Promise<string> {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  return (
-    (
-      await prompts({
-        type: 'text',
-        name: 'question',
-        message,
-      })
-    ).question || ''
-  );
-}
-
 export async function confirm(message: string) {
   if (AUTO_CONFIRM) return true;
-  return (await question(`${message} (Y)`)).toLowerCase().trim() !== 'n';
+
+  const answer = await inquirer.prompt<{ response: boolean }>({
+    name: 'response',
+    type: 'confirm',
+    message,
+  });
+
+  return answer.response;
 }
 
-export function input(message: string) {
+export async function input(message: string) {
   if (AUTO_CONFIRM)
     throw new Error('Cannot use auto confirm when user input is required.');
-  return question(message);
+
+  const answer = await inquirer.prompt<{ input: string }>({
+    name: 'input',
+    type: 'input',
+    message,
+  });
+
+  return answer.input.trim();
 }
 
 export async function choices<T>(
   message: string,
-  choices: { title: string; value: T }[]
-): Promise<T | undefined> {
-  return (
-    await prompts({
-      type: 'select',
-      name: 'choice',
-      message,
-      choices,
-    })
-  ).choice;
+  choices: { name: string; value: T }[]
+) {
+  const answer = await inquirer.prompt<{ selected?: T }>({
+    name: 'selected',
+    type: 'list',
+    message,
+    choices: [
+      { value: undefined, name: 'None' },
+      new inquirer.Separator(),
+      ...choices,
+    ],
+  });
+
+  return answer.selected;
 }

@@ -75,7 +75,7 @@ async function selectStream(
   const r = await choices(
     `Select ${name} stream`,
     streams.map((s, i) => ({
-      title: [s.codec_name, s.tags?.language, s.tags?.title]
+      name: [s.codec_name, s.tags?.language, s.tags?.title]
         .filter((s) => s !== undefined && s !== 'unknown')
         .join(', '),
       value: i,
@@ -172,7 +172,7 @@ async function downloadSubtitles({
       const chosenSubtitleI = await choices(
         `Choose ${type} subtitle stream from file, or none`,
         streams.sub.map((s, i) => ({
-          title: `${[s.tags?.language, s.tags?.title]
+          name: `${[s.tags?.language, s.tags?.title]
             .filter((s) => s !== undefined)
             .join(', ')}`,
           value: i,
