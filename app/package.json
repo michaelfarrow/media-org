@@ -38,6 +38,7 @@
     "promise-retry": "^2.0.1",
     "serve-static": "^1.15.0",
     "sharp": "^0.33.2",
+    "string-strip-html": "^13.4.7",
     "subtitle": "^4.2.1",
     "tsx": "^4.7.1",
     "utimes": "^5.2.1",

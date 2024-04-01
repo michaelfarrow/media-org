@@ -3,6 +3,8 @@ import axios from 'axios';
 import path from 'path';
 import { MovieDb, ExternalId, type MovieResult } from 'moviedb-promise';
 import promiseRetry from 'promise-retry';
+import { parse, map, stringify } from 'subtitle';
+import { stripHtml } from 'string-strip-html';
 import {
   MOVIE_TYPES,
   MOVIE_AUDIO_TYPES,
@@ -10,7 +12,7 @@ import {
   BACKDROP_FILE,
   POSTER_FILE,
 } from '@/lib/config';
-import { getFileTypes, downloadImage } from '@/lib/fs';
+import { type File, getFileTypes, downloadImage } from '@/lib/fs';
 import { input, confirm, choices } from '@/lib/ui';
 import { runFfmpegCommand, probeMediaFile, type FfmpegArg } from '@/lib/media';
 import ffmpeg from '@/lib/ffmpeg';
@@ -85,9 +87,7 @@ async function selectStream(
   return r !== undefined ? Number(r) : null;
 }
 
-async function chooseStreams(src: string) {
-  const data = await probeMediaFile(src);
-
+async function chooseStreams(src: string, data: ffmpeg.FfprobeData) {
   const videoStreams = data.streams.filter((s) => s.codec_type === 'video');
   const audioStreams = data.streams.filter((s) => s.codec_type === 'audio');
   const subStreams = data.streams.filter((s) => s.codec_type === 'subtitle');
@@ -139,6 +139,54 @@ async function lookupData(id: string) {
     poster: (poster && `${IMAGE_PREFIX}${poster}`) || undefined,
     backdrop: (backdrop && `${IMAGE_PREFIX}${backdrop}`) || undefined,
   };
+}
+
+async function processSrt(file: File, data: ffmpeg.FfprobeData) {
+  const duration = data.format.duration;
+
+  if (!duration) throw new Error(`Could not get duration: ${file.path}`);
+
+  const tempDest = path.resolve(
+    file.dir,
+    `.${file.nameWithoutExt}.temp.${file.ext}`
+  );
+
+  await new Promise<{ html: boolean; warnings: string[] }>(
+    (resolve, reject) => {
+      let html = false;
+      let warnings: string[] = [];
+
+      fs.createReadStream(file.path)
+        .pipe(parse())
+        .pipe(
+          map((node) => {
+            if (node.type === 'cue') {
+              const cleaned = stripHtml(node.data.text).result;
+
+              if (node.data.text !== cleaned) {
+                html = true;
+              }
+
+              const end = node.data.end / 1000;
+
+              if (duration - Math.min(duration, end) < 50) {
+                warnings.push('Subtitle(s) close to the end.');
+              }
+
+              node.data.text = cleaned;
+            }
+
+            return node;
+          })
+        )
+        .pipe(stringify({ format: 'SRT' }))
+        .pipe(fs.createWriteStream(tempDest))
+        .on('error', reject)
+        .on('finish', () => resolve({ html, warnings }));
+    }
+  );
+
+  await fs.move(tempDest, file.path, { overwrite: true });
 }
 
 async function downloadSubtitles({
@@ -219,7 +267,7 @@ async function downloadSubtitles({
             },
           } = s;
           return {
-            title: `${fps} fps, ${release}, ${
+            name: `${fps} fps, ${release}, ${
               new_download_count + download_count
             } downloads, rated ${ratings} with ${votes} votes${
               from_trusted ? ' [TRUSTED]' : ''
@@ -257,10 +305,21 @@ async function downloadSubtitles({
   }
 }
 
+async function processSubtitles(src: string, data: ffmpeg.FfprobeData) {
+  const subtitleFiles = await getFileTypes(src, ['srt']);
+
+  for (const subtitleFile of subtitleFiles) {
+    if (subtitleFile.name.startsWith('.')) continue;
+    console.log('Processing', subtitleFile);
+    await processSrt(subtitleFile, data);
+  }
+}
+
 export default async function name(src: string, id: string) {
   const _id = id.toLowerCase().trim();
   const file = await getFile(src);
   const data = await lookupData(_id);
+  const probeData = await probeMediaFile(file);
 
   if (!data && !(await confirm('Data could not be found, continue?')))
     return false;
@@ -280,7 +339,7 @@ export default async function name(src: string, id: string) {
     )
       return false;
 
-  const streams = await chooseStreams(file);
+  const streams = await chooseStreams(file, probeData);
 
   if (streams.video === null) throw new Error('No video stream');
   if (streams.audio === null) throw new Error('No audio stream');
@@ -358,6 +417,8 @@ export default async function name(src: string, id: string) {
     name: itemName(name),
     language,
   });
+
+  await processSubtitles(dest, probeData);
 
   if (poster) await saveArt(poster, path.resolve(dest, POSTER_FILE));
   if (backdrop) await saveArt(backdrop, path.resolve(dest, BACKDROP_FILE));
