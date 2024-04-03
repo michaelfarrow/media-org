@@ -4,10 +4,10 @@ import { type FfmpegCommand, type FfprobeData } from 'fluent-ffmpeg';
 export type FfmpegArg = [string, string] | [string];
 
 export function probeMediaFile(file: string): Promise<FfprobeData> {
-  return ffProbe(file, [['-show_chapters']]);
+  return ffprobe(file, [['-show_chapters']]);
 }
 
-export function ffProbe(
+export function ffprobe(
   file: string,
   options: FfmpegArg[] = []
 ): Promise<ffmpeg.FfprobeData> {

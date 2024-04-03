@@ -1,4 +1,4 @@
-import { runFfmpegCommand, runFfmpegProbeCommand } from '@/lib/media';
+import { runFfmpegCommand, ffprobe } from '@/lib/media';
 import ffmpeg from '@/lib/ffmpeg';
 
 import { processMovies } from './shared/process-movies';
@@ -9,7 +9,7 @@ export default async function integrity(src: string) {
 
     if (!file.path.includes('³')) return;
 
-    const test = await runFfmpegProbeCommand(file.path, [
+    const test = await ffprobe(file.path, [
       ['-show_entries', 'stream=r_frame_rate,nb_read_frames,duration'],
       ['-select_streams', 'v'],
       ['-count_frames'],
