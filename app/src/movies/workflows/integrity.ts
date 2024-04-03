@@ -7,14 +7,14 @@ export default async function integrity(src: string) {
   await processMovies(src, async ({ file, data }) => {
     if (data.format.tags?.CHECKED !== 'yes') return;
 
-    if (!file.path.includes('³')) return;
+    if (!file.path.includes('500')) return;
 
     const test = await ffprobe(file.path, [
       ['-show_entries', 'stream=r_frame_rate,nb_read_frames,duration'],
       ['-select_streams', 'v'],
       ['-count_frames'],
-      ['-of', 'compact=p=1:nk=1'],
-      ['-threads', '3'],
+      // ['-of', 'compact=p=1:nk=1'],
+      ['-threads', '4'],
       ['-v', '0'],
     ]);
 
