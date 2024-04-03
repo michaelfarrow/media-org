@@ -4,6 +4,7 @@ import subtitles from './commands/subtitles';
 import compress from './commands/compress';
 import update from './commands/update';
 import streams from './commands/streams';
+import integrity from './commands/integrity';
 
 const program = new Command();
 
@@ -33,6 +34,10 @@ program.command('update').action(async () => {
 
 program.command('streams').action(async () => {
   await streams();
+});
+
+program.command('integrity').action(async () => {
+  await integrity();
 });
 
 program.parse();

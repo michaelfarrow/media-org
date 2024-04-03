@@ -15,7 +15,7 @@ export function probeMediaFile(file: string): Promise<FfprobeData> {
 export function runFfmpegCommand(
   command: FfmpegCommand,
   options: FfmpegArg[] = []
-): Promise<true> {
+): Promise<{ stdout?: string[]; stderr?: string[] }> {
   console.log(
     'Ffmpeg options:',
     options.map((option) => option.join(' '))
@@ -32,7 +32,12 @@ export function runFfmpegCommand(
           console.log(`Processing: ${Math.round(progress.percent)}%`);
       })
       .on('error', reject)
-      .on('end', () => resolve(true))
+      .on('end', (out: string, err: string) => {
+        const stdout = (out.length && out.split(/\r\n|\r|\n/)) || undefined;
+        const stderr = (err.length && err.split(/\r\n|\r|\n/)) || undefined;
+
+        resolve({ stdout, stderr });
+      })
       .run();
   });
 }
