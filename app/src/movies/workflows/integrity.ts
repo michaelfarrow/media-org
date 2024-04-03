@@ -7,9 +7,7 @@ export default async function integrity(src: string) {
   await processMovies(src, async ({ file, data }) => {
     if (data.format.tags?.CHECKED !== 'yes') return;
 
-    if (!file.path.includes('500')) return;
-
-    const test = await ffprobe(file.path, [
+    const probeData = await ffprobe(file.path, [
       ['-show_entries', 'stream=r_frame_rate,nb_read_frames,duration'],
       ['-select_streams', 'v'],
       ['-count_frames'],
@@ -18,7 +16,23 @@ export default async function integrity(src: string) {
       ['-v', '0'],
     ]);
 
-    console.log(test);
+    const {
+      format: { duration },
+      streams,
+    } = probeData;
+    const stream = streams[0];
+
+    const { r_frame_rate, nb_read_frames } = stream;
+
+    if (duration && r_frame_rate && nb_read_frames) {
+      if (
+        Math.abs(Number(nb_read_frames) - eval(r_frame_rate) * duration) > 5
+      ) {
+        console.log(
+          `frame count mismatch (${nb_read_frames} read frames, ${r_frame_rate} fps, duration ${duration}) in ${file.path}`
+        );
+      }
+    }
 
     const { stderr } = await runFfmpegCommand(
       ffmpeg(file.path, { stdoutLines: 0 })
