@@ -11,6 +11,11 @@ export function ffprobe(
   file: string,
   options: FfmpegArg[] = []
 ): Promise<ffmpeg.FfprobeData> {
+  console.log(
+    'ffprobe options:',
+    options.map((option) => option.join(' '))
+  );
+
   return new Promise((resolve, reject) => {
     ffmpeg(file).ffprobe(options.flat(), (err, data) => {
       if (err) return reject(err);
