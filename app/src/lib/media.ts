@@ -1,11 +1,18 @@
 import ffmpeg from '@/lib/ffmpeg';
 import { type FfmpegCommand, type FfprobeData } from 'fluent-ffmpeg';
 
-export type FfmpegArg = [string, string];
+export type FfmpegArg = [string, string] | [string];
 
 export function probeMediaFile(file: string): Promise<FfprobeData> {
+  return ffProbe(file, [['-show_chapters']]);
+}
+
+export function ffProbe(
+  file: string,
+  options: FfmpegArg[] = []
+): Promise<ffmpeg.FfprobeData> {
   return new Promise((resolve, reject) => {
-    ffmpeg(file).ffprobe(['-show_chapters'], (err, data) => {
+    ffmpeg(file).ffprobe(options.flat(), (err, data) => {
       if (err) return reject(err);
       resolve(data);
     });
