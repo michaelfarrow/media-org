@@ -36,11 +36,13 @@ export default function processRaw(
         return true;
       }
 
-      return await convertToAlac(track.path, dest, {
+      await convertToAlac(track.path, dest, {
         bitDepth: BIT_DEPTH,
         sampleRate: SAMPLE_RATE,
         copy,
       });
+
+      return true;
     },
   });
 }
