@@ -45,7 +45,7 @@ export default async (
     ) {
       const parsed = path.parse(outputFilePath);
 
-      ffmpegFileOutputPath = path.join(
+      ffmpegFileOutputPath = path.resolve(
         parsed.dir,
         `${parsed.name}-${uuid()}${parsed.ext}`
       );

@@ -19,6 +19,11 @@ export function ffprobe(
   });
 }
 
+function processOut(out: string) {
+  const _out = out.split(/\r\n|\r|\n/)?.filter((line) => line.length);
+  return (_out?.length && _out) || undefined;
+}
+
 export function runFfmpegCommand(
   command: FfmpegCommand,
   options: FfmpegArg[] = []
@@ -40,8 +45,8 @@ export function runFfmpegCommand(
       })
       .on('error', reject)
       .on('end', (out: string, err: string) => {
-        const stdout = (out.length && out.split(/\r\n|\r|\n/)) || undefined;
-        const stderr = (err.length && err.split(/\r\n|\r|\n/)) || undefined;
+        const stdout = processOut(out);
+        const stderr = processOut(err);
 
         resolve({ stdout, stderr });
       })

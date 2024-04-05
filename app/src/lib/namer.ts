@@ -58,7 +58,7 @@ export function artistPath(artist: string) {
 
 export function releasePath(release: Release) {
   const { title, disambiguation, artist, year } = release;
-  return path.join(
+  return path.resolve(
     artistPath(artist),
     dirName(`${year} ${title}${disambiguation ? ` (${disambiguation})` : ''}`)
   );
