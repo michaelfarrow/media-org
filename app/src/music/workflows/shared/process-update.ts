@@ -2,7 +2,6 @@ import path from 'path';
 import fs from 'fs-extra';
 import {
   RELEASE_FILE,
-  COVER_FILES,
   COVER_FILES_TO_CONVERT,
   SOURCE_FLAG_FILES,
 } from '@/lib/config';
@@ -152,7 +151,7 @@ export default async function processUpdate(
 
   await fs.ensureDir(releaseDest);
   await processTracks(files, release, releaseDest, processTrack);
-  await copyFiles(src, releaseDest, COVER_FILES);
+  await copyFiles(src, releaseDest, COVER_FILES_TO_CONVERT);
   await copyFiles(src, releaseDest, SOURCE_FLAG_FILES);
   await outputInfoFile(release, releaseDest);
 
