@@ -6,7 +6,6 @@ import promiseRetry from 'promise-retry';
 import {
   MOVIE_TYPES,
   MOVIE_AUDIO_TYPES,
-  MOVIES_DIR,
   BACKDROP_FILE,
   POSTER_FILE,
 } from '@/lib/config';
@@ -16,6 +15,8 @@ import { runFfmpegCommand, probeMediaFile, type FfmpegArg } from '@/lib/media';
 import ffmpeg from '@/lib/ffmpeg';
 import { itemName } from '@/lib/namer';
 import { getSubtitles, getSubtitleLink } from '@/lib/movies';
+
+import subtitles from './subtitles';
 
 const TM_DB_KEY = '4219e299c89411838049ab0dab19ebd5';
 const IMAGE_PREFIX = 'https://image.tmdb.org/t/p/original';
@@ -408,4 +409,6 @@ export default async function name(src: string, dest: string) {
       ['-metadata', 'CHECKED=yes'],
     ]
   );
+
+  await subtitles(src);
 }

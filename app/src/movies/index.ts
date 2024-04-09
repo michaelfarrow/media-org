@@ -6,6 +6,7 @@ import { MOVIES_DIR } from '@/lib/config';
 
 import name from './workflows/name';
 import subtitles from './workflows/subtitles';
+import subtitlesAll from './workflows/subtitles-all';
 import compress from './workflows/compress';
 import update from './workflows/update';
 import streams from './workflows/streams';
@@ -30,7 +31,12 @@ program
 program
   .command('subtitles')
   .argument('[source]', 'source directory')
-  .action((src) => subtitles(src || MOVIES_DIR));
+  .action((src) => subtitles(src || CURRENT_DIR));
+
+program
+  .command('subtitles-all')
+  .argument('[source]', 'source directory')
+  .action((src) => subtitlesAll(src || MOVIES_DIR));
 
 program
   .command('compress')
