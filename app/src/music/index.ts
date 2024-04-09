@@ -1,5 +1,6 @@
 import { Command } from '@commander-js/extra-typings';
 import path from 'path';
+import colors from 'colors';
 
 import { MUSIC_COMPRESSED_DIR, MUSIC_LOSSESS_DIR } from '@/lib/config';
 
@@ -85,4 +86,6 @@ program
   )
   .action((src, { all }) => releases(src || MUSIC_LOSSESS_DIR, all));
 
-program.parse();
+program.parseAsync().catch((e) => {
+  console.log(colors.red(e.message || 'Error'));
+});

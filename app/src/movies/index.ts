@@ -1,5 +1,6 @@
 import { Command } from '@commander-js/extra-typings';
 import path from 'path';
+import colors from 'colors';
 
 import { MOVIES_DIR } from '@/lib/config';
 
@@ -56,4 +57,6 @@ program
   .argument('[source]', 'source directory')
   .action((src) => integrityAll(src || MOVIES_DIR));
 
-program.parse();
+program.parseAsync().catch((e) => {
+  console.log(colors.red(e.message || 'Error'));
+});
