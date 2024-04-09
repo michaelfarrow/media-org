@@ -6,7 +6,9 @@ import ffmpeg from '@/lib/ffmpeg';
 import { processMovies } from './shared/process-movies';
 
 export default async function compress(src: string) {
-  await processMovies(src, async ({ file, data, streams }) => {
+  const movies = await processMovies(src);
+
+  for (const { file, data, streams } of movies) {
     if (
       streams.video.width &&
       streams.video.width > 1280 &&
@@ -32,5 +34,5 @@ export default async function compress(src: string) {
       await fs.remove(file.path);
       await fs.rename(tempPath, file.path);
     }
-  });
+  }
 }

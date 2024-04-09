@@ -1,10 +1,16 @@
 import { Command } from '@commander-js/extra-typings';
-import name from './commands/name';
-import subtitles from './commands/subtitles';
-import compress from './commands/compress';
-import update from './commands/update';
-import streams from './commands/streams';
-import integrity from './commands/integrity';
+import path from 'path';
+
+import { MOVIES_DIR } from '@/lib/config';
+
+import name from './workflows/name';
+import subtitles from './workflows/subtitles';
+import compress from './workflows/compress';
+import update from './workflows/update';
+import streams from './workflows/streams';
+import integrity from './workflows/integrity';
+
+const CURRENT_DIR = path.resolve('.');
 
 const program = new Command();
 
@@ -16,28 +22,32 @@ program
 program
   .command('name')
   .argument('[source]', 'source directory')
-  .action(async (src) => {
-    await name(src);
-  });
+  .argument('[dest]', 'destination directory')
+  .action((src, dest) => name(src || CURRENT_DIR, dest || MOVIES_DIR));
 
-program.command('subtitles').action(async () => {
-  await subtitles();
-});
+program
+  .command('subtitles')
+  .argument('[source]', 'source directory')
+  .action((src) => subtitles(src || MOVIES_DIR));
 
-program.command('compress').action(async () => {
-  await compress();
-});
+program
+  .command('compress')
+  .argument('[source]', 'source directory')
+  .action((src) => compress(src || MOVIES_DIR));
 
-program.command('update').action(async () => {
-  await update();
-});
+program
+  .command('update')
+  .argument('[source]', 'source directory')
+  .action((src) => update(src || MOVIES_DIR));
 
-program.command('streams').action(async () => {
-  await streams();
-});
+program
+  .command('streams')
+  .argument('[source]', 'source directory')
+  .action((src) => streams(src || MOVIES_DIR));
 
-program.command('integrity').action(async () => {
-  await integrity();
-});
+program
+  .command('integrity-all')
+  .argument('[source]', 'source directory')
+  .action((src) => integrity(src || MOVIES_DIR));
 
 program.parse();

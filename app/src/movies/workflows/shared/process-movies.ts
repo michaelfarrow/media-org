@@ -3,9 +3,10 @@ import { getDirs, getFileTypes, type File } from '@/lib/fs';
 import { probeMediaFile } from '@/lib/media';
 import ffmpeg from '@/lib/ffmpeg';
 
-export async function processMovies(
-  src: string,
-  process: (data: {
+export async function processMovies(src: string) {
+  const movieDirs = await getDirs(src);
+
+  const movies: {
     file: File;
     data: ffmpeg.FfprobeData;
     streams: {
@@ -13,9 +14,7 @@ export async function processMovies(
       audio: ffmpeg.FfprobeStream[];
       sub: ffmpeg.FfprobeStream[];
     };
-  }) => Promise<any>
-) {
-  const movieDirs = await getDirs(src);
+  }[] = [];
 
   for (const movieDir of movieDirs) {
     const movieFiles = (await getFileTypes(movieDir.path, MOVIE_TYPES)).filter(
@@ -57,7 +56,7 @@ export async function processMovies(
     if (audioStreams.length > 2)
       throw new Error(`Too many audio streams in "${movieFile.path}"`);
 
-    await process({
+    movies.push({
       file: movieFile,
       data,
       streams: {
@@ -67,4 +66,6 @@ export async function processMovies(
       },
     });
   }
+
+  return movies;
 }

@@ -219,7 +219,7 @@ async function downloadSubtitles({
             },
           } = s;
           return {
-            title: `${fps} fps, ${release}, ${
+            name: `${fps} fps, ${release}, ${
               new_download_count + download_count
             } downloads, rated ${ratings} with ${votes} votes${
               from_trusted ? ' [TRUSTED]' : ''
@@ -257,13 +257,24 @@ async function downloadSubtitles({
   }
 }
 
-export default async function name(src: string, id: string) {
-  const _id = id.toLowerCase().trim();
-  const file = await getFile(src);
-  const data = await lookupData(_id);
+export default async function name(src: string, dest: string) {
+  let id: string | undefined = undefined;
 
-  if (!data && !(await confirm('Data could not be found, continue?')))
-    return false;
+  const existingId = src.match(/(tt\d+)/i);
+  if (existingId) id = existingId[0].toLowerCase().trim();
+
+  if (!id) id = (await input('IMDb id:')).trim();
+
+  if (!id.length) {
+    console.log('No id specified');
+    return;
+  }
+
+  id = id.toLowerCase().trim();
+  const file = await getFile(src);
+  const data = await lookupData(id);
+
+  if (!data && !(await confirm('Data could not be found, continue?'))) return;
 
   let { title, year, poster, backdrop, language } = data || {};
 
@@ -278,7 +289,7 @@ export default async function name(src: string, id: string) {
       !backdrop &&
       (await confirm('Backdrop image could not be found, continue?'))
     )
-      return false;
+      return;
 
   const streams = await chooseStreams(file);
 
@@ -289,7 +300,7 @@ export default async function name(src: string, id: string) {
     streams.chapters.length <= 1 &&
     !(await confirm('<= 1 Chapter, continue?'))
   )
-    return false;
+    return;
 
   if (
     !streams.video.stream.codec_name ||
@@ -298,7 +309,7 @@ export default async function name(src: string, id: string) {
         `Video not h.264 (${streams.video.stream.codec_name}), continue?`
       )))
   )
-    return false;
+    return;
 
   if (
     !streams.video.stream.width ||
@@ -307,7 +318,7 @@ export default async function name(src: string, id: string) {
         `Video not 720p (${streams.video.stream.width}), continue?`
       )))
   )
-    return false;
+    return;
 
   if (
     !streams.audio.stream.codec_name ||
@@ -318,7 +329,7 @@ export default async function name(src: string, id: string) {
         }), continue?`
       )))
   )
-    return false;
+    return;
 
   if (
     !streams.audio.stream.channels ||
@@ -327,40 +338,42 @@ export default async function name(src: string, id: string) {
         `Audio not 5.1 surround sound or better (${streams.audio.stream.channels} channels), continue?`
       )))
   )
-    return false;
+    return;
 
-  const name = `${title} (${year}) {imdb-${_id}}`;
+  const name = `${title} (${year}) {imdb-${id}}`;
   const ext = path.parse(file).ext.toLowerCase().trim().replace(/^\./, '');
 
-  const dest = path.resolve(MOVIES_DIR, itemName(name, true));
-  const sameSrcDest = path.resolve(src) === dest;
+  const _dest = path.resolve(dest, itemName(name, true));
+  const sameSrcDest = path.resolve(src) === _dest;
 
-  if (await fs.exists(dest)) {
+  if (await fs.exists(_dest)) {
     if (
       !sameSrcDest &&
-      !(await confirm(`Destination already exists (${dest}), erase/overwrite?`))
+      !(await confirm(
+        `Destination already exists (${_dest}), erase/overwrite?`
+      ))
     ) {
-      return false;
+      return;
     }
-    !sameSrcDest && (await fs.remove(dest));
+    !sameSrcDest && (await fs.remove(_dest));
   }
 
-  await fs.ensureDir(dest);
+  await fs.ensureDir(_dest);
 
   await downloadSubtitles({
     src: file,
-    id: _id,
+    id,
     streams: {
       video: streams.video.stream,
       sub: streams.sub,
     },
-    dest,
+    dest: _dest,
     name: itemName(name),
     language,
   });
 
-  if (poster) await saveArt(poster, path.resolve(dest, POSTER_FILE));
-  if (backdrop) await saveArt(backdrop, path.resolve(dest, BACKDROP_FILE));
+  if (poster) await saveArt(poster, path.resolve(_dest, POSTER_FILE));
+  if (backdrop) await saveArt(backdrop, path.resolve(_dest, BACKDROP_FILE));
 
   const streamMapping: FfmpegArg[] = [
     ['-map', `0:v:${streams.video.index}`],
@@ -368,10 +381,10 @@ export default async function name(src: string, id: string) {
     // ['-map', `0:a:${streams.audio.index}`],
   ];
 
-  return runFfmpegCommand(
+  await runFfmpegCommand(
     ffmpeg(file)
       .inputOptions(ext === 'avi' ? ['-fflags +genpts'] : [])
-      .output(path.resolve(dest, `${itemName(name)}.mkv`)),
+      .output(path.resolve(_dest, `${itemName(name)}.mkv`)),
     [
       ...streamMapping,
       ['-map_metadata', '-1'],

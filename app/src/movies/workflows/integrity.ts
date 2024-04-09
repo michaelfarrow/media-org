@@ -6,7 +6,9 @@ import ffmpeg from '@/lib/ffmpeg';
 import { processMovies } from './shared/process-movies';
 
 export default async function integrity(src: string) {
-  await processMovies(src, async ({ file, data }) => {
+  const movies = await processMovies(src);
+
+  for (const { file, data } of movies) {
     const logPath = path.resolve(file.dir, `.${file.nameWithoutExt}.error.log`);
 
     if (data.format.tags?.CHECKED !== 'yes') return;
@@ -64,5 +66,5 @@ export default async function integrity(src: string) {
       await fs.writeFile(logPath, `${errors.join('\n\n')}\n`);
       console.log('Errors found in', file.path);
     }
-  });
+  }
 }

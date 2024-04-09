@@ -1,7 +1,9 @@
 import { processMovies } from './shared/process-movies';
 
 export default async function subtitles(src: string) {
-  await processMovies(src, async ({ file, data, streams }) => {
+  const movies = await processMovies(src);
+
+  for (const { file, data, streams } of movies) {
     const { video, audio } = streams;
 
     console.log(file.name);
@@ -31,5 +33,5 @@ export default async function subtitles(src: string) {
     //   console.log('SUB', subStream);
     // });
     console.log('');
-  });
+  }
 }
