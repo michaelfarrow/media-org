@@ -9,6 +9,7 @@ import compress from './workflows/compress';
 import update from './workflows/update';
 import streams from './workflows/streams';
 import integrity from './workflows/integrity';
+import integrityAll from './workflows/integrity-all';
 
 const CURRENT_DIR = path.resolve('.');
 
@@ -48,6 +49,11 @@ program
 program
   .command('integrity')
   .argument('[source]', 'source directory')
-  .action((src) => integrity(src || MOVIES_DIR));
+  .action((src) => integrity(src || CURRENT_DIR));
+
+program
+  .command('integrity-all')
+  .argument('[source]', 'source directory')
+  .action((src) => integrityAll(src || MOVIES_DIR));
 
 program.parse();
