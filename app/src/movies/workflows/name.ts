@@ -41,13 +41,16 @@ async function getFile(src: string) {
       throw new Error(`Could not find any valid video files in ${src}`);
 
     if (files.length > 1) {
-      console.log('Found multiple files, please choose one:');
-      for (let i = 0; i < files.length; i++) {
-        console.log(`${i}: ${files[i].name}`);
-      }
-      const chosen = Number(await input('#'));
+      const chosen = await choices(
+        `Found multiple files, please choose one`,
+        files.map((file, i) => ({
+          name: file.name,
+          value: i,
+        }))
+      );
 
-      const file: string | undefined = files[chosen]?.path;
+      const file: string | undefined =
+        (chosen !== undefined && files[chosen]?.path) || undefined;
       if (!file) throw new Error('No file chosen');
 
       return file;
