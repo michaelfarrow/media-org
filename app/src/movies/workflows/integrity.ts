@@ -53,11 +53,19 @@ export default async function integrity(src: string) {
       ]
     );
 
-    if (stderr?.length) {
+    const errorsFiltered = stderr?.filter((line) => {
+      if (line.match(/last message repeated \d+ times?/i)) return false;
+      if (line.match(/non monotonically increasing/i)) return false;
+      return true;
+    });
+
+    if (errorsFiltered?.length) {
       errors.push(
         [
-          `${stderr.length} error${stderr.length === 1 ? '' : 's'} found:`,
-          ...stderr,
+          `${errorsFiltered.length} error${
+            errorsFiltered.length === 1 ? '' : 's'
+          } found:`,
+          ...errorsFiltered,
         ].join('\n')
       );
     }

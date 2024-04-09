@@ -46,7 +46,7 @@ program
   .action((src) => streams(src || MOVIES_DIR));
 
 program
-  .command('integrity-all')
+  .command('integrity')
   .argument('[source]', 'source directory')
   .action((src) => integrity(src || MOVIES_DIR));
 
