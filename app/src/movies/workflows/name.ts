@@ -413,5 +413,5 @@ export default async function name(src: string, dest: string) {
     ]
   );
 
-  await subtitles(src);
+  await subtitles(_dest);
 }
