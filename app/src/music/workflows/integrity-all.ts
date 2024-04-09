@@ -1,19 +1,15 @@
-import compress from './compress';
-
+import integrity from './integrity';
 import processArtists from './shared/process-artists';
 import processReleases from './shared/process-releases';
 
-export default async function compressAll(src: string, dest: string) {
+export default async function integrityAll(src: string) {
   const artists = await processArtists(src);
 
   for (const { artist } of artists) {
     const releases = await processReleases(artist.path);
 
-    for (const { release, info } of releases) {
-      if (!info) continue;
-      await compress(release, dest, {
-        skipComplete: true,
-      });
+    for (const { release } of releases) {
+      await integrity(release);
     }
   }
 }

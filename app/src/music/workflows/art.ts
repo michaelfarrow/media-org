@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import axios from 'axios';
 import { type Item, downloadImage } from '@/lib/fs';
-import { ARTIST_FILE, MUSIC_COMPRESSED_DIR } from '@/lib/config';
+import { ARTIST_FILE } from '@/lib/config';
 
 import processArtists from './shared/process-artists';
 
@@ -78,19 +78,20 @@ function artistArtPath(artist: Item) {
   return path.resolve(artist.path, ARTIST_FILE);
 }
 
-export default async function art() {
-  return processArtists(MUSIC_COMPRESSED_DIR, {
-    async shouldProcessArtist(artist) {
-      return !(await fs.exists(artistArtPath(artist)));
-    },
-    async processArtist({ artist, name, id }) {
-      const data = await getArt(name, id);
+export default async function art(src: string) {
+  const artists = await processArtists(src);
 
-      if (data && data.primary) {
-        await saveArt(data.primary, artistArtPath(artist));
-      } else {
-        console.log('MISSING', name);
-      }
-    },
-  });
+  for (const { artist, name, id } of artists) {
+    const artPath = artistArtPath(artist);
+
+    if (await fs.exists(artPath)) continue;
+
+    const data = await getArt(name, id);
+
+    if (data && data.primary) {
+      await saveArt(data.primary, artPath);
+    } else {
+      console.log('MISSING', name);
+    }
+  }
 }

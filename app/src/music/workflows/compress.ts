@@ -115,7 +115,7 @@ export default async function compress(
 
   if (!foundCover) {
     console.log(`Cover file not found`);
-    return false;
+    return;
   }
 
   const release = Release.parse(await fs.readJson(releaseFile));
@@ -176,7 +176,7 @@ export default async function compress(
         `Destination already exists (${releaseDest}), erase/overwrite?`
       ))
     )
-      return false;
+      return;
 
     await fs.remove(releaseDest);
   }
@@ -185,5 +185,5 @@ export default async function compress(
   await processTracks(files, release, releaseDest);
   await convertCoverFile(src, releaseDest);
 
-  return releaseDest;
+  // return releaseDest;
 }

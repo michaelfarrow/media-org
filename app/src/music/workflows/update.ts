@@ -24,7 +24,7 @@ export default async function update(
   if (!(await fs.exists(releaseFile)))
     throw new Error(`Release file does not exist: ${releaseFile}`);
 
-  const releaseRes = await processUpdate(src, destLossless, {
+  await processUpdate(src, destLossless, {
     mbId: id,
     releaseExts: ['m4a'],
     async processTrack(track, dest) {
@@ -43,7 +43,7 @@ export default async function update(
     },
   });
 
-  return releaseRes;
+  // return releaseRes;
 
   // if (releaseRes) return await compress(src, destCompressed);
 }

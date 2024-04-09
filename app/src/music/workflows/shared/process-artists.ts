@@ -1,29 +1,14 @@
 import path from 'path';
 import fs from 'fs-extra';
-import { getDirs, Item } from '@/lib/fs';
+import { getDirs, type Item } from '@/lib/fs';
 import { Release } from '@/lib/namer';
 import { MUSIC_LOSSESS_DIR, RELEASE_FILE } from '@/lib/config';
 
-interface Options {
-  shouldProcessArtist?: (item: Item) => Promise<boolean>;
-  processArtist?: (data: {
-    artist: Item;
-    name: string;
-    id?: string;
-  }) => Promise<void>;
-}
-
-export default async function processArtists(
-  dir: string,
-  options: Options = {}
-) {
-  const { shouldProcessArtist, processArtist } = options;
-
+export default async function processArtists(dir: string) {
   const artists = await getDirs(dir);
+  const _artists: { artist: Item; name: string; id?: string }[] = [];
 
   for (const artist of artists) {
-    if (shouldProcessArtist && !(await shouldProcessArtist(artist))) continue;
-
     let artistId: string | undefined = undefined;
     let artistName = artist.name;
 
@@ -46,9 +31,8 @@ export default async function processArtists(
       }
     }
 
-    processArtist &&
-      (await processArtist({ artist, name: artistName, id: artistId }));
+    _artists.push({ artist, name: artistName, id: artistId });
   }
 
-  return true;
+  return _artists;
 }
