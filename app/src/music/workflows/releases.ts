@@ -24,7 +24,7 @@ export default async function releases(src: string, all?: boolean) {
       .map(({ info }) => info)
       .filter((info) => !!info);
 
-    if (!releases.length) return;
+    if (!releases.length) continue;
 
     const existingGroupIds = releases.map((release) => release.groupId);
 

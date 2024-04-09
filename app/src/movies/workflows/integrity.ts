@@ -11,8 +11,8 @@ export default async function integrity(src: string) {
   for (const { file, data } of movies) {
     const logPath = path.resolve(file.dir, `.${file.nameWithoutExt}.error.log`);
 
-    if (data.format.tags?.CHECKED !== 'yes') return;
-    if (await fs.exists(logPath)) return;
+    if (data.format.tags?.CHECKED !== 'yes') continue;
+    if (await fs.exists(logPath)) continue;
 
     const errors: string[] = [];
 
