@@ -11,8 +11,9 @@ export default async function audio(src: string) {
   for (const { file, data, streams } of movies) {
     if (
       streams.audio.length === 1 &&
+      (streams.audio?.[0].channels || 0) >= 6 &&
       data.format.tags?.CHECKED === 'yes' &&
-      file.path.includes('Into Darkness')
+      (file.path.includes('Into Darkness') || file.path.includes('Dune (1984)'))
     ) {
       const tempPath = path.resolve(
         file.dir,
@@ -26,7 +27,7 @@ export default async function audio(src: string) {
         ['-c:v', 'copy'],
         ['-c:a:0', 'libfdk_aac'],
         ['-c:a:1', 'copy'],
-        ['-filter:a:0', 'loudnorm'],
+        ['-filter:a:0', 'loudnorm=I=-14:TP=-1'],
         // [
         //   '-filter:a:0',
         //   'pan=stereo|FL=FC+0.30*FL+0.30*FLC+0.30*BL+0.30*SL+0.60*LFE|FR=FC+0.30*FR+0.30*FRC+0.30*BR+0.30*SR+0.60*LFE',
