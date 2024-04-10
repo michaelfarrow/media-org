@@ -12,6 +12,7 @@ import update from './workflows/update';
 import streams from './workflows/streams';
 import integrity from './workflows/integrity';
 import integrityAll from './workflows/integrity-all';
+import audio from './workflows/audio';
 
 const CURRENT_DIR = path.resolve('.');
 
@@ -62,6 +63,11 @@ program
   .command('integrity-all')
   .argument('[source]', 'source directory')
   .action((src) => integrityAll(src || MOVIES_DIR));
+
+program
+  .command('audio')
+  .argument('[source]', 'source directory')
+  .action((src) => audio(src || MOVIES_DIR));
 
 program.parseAsync().catch((e) => {
   console.log(colors.red(e.message || 'Error'));
