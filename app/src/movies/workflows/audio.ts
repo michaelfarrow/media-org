@@ -20,7 +20,7 @@ export default async function audio(src: string) {
         `.${file.nameWithoutExt}.temp.${file.ext}`
       );
 
-      runFfmpegCommand(ffmpeg(file.path).output(tempPath), [
+      await runFfmpegCommand(ffmpeg(file.path).output(tempPath), [
         ['-map', '0:v'],
         ['-map', '0:a:0'],
         ['-map', '0:a:0'],
