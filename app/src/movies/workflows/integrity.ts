@@ -9,9 +9,10 @@ export default async function integrity(src: string) {
   const { file, data } = await processMovie(src);
 
   const logPath = path.resolve(file.dir, `.${file.nameWithoutExt}.error.log`);
+  const okPath = path.resolve(file.dir, `.${file.nameWithoutExt}.ok.log`);
 
   if (data.format.tags?.CHECKED !== 'yes') return;
-  if (await fs.exists(logPath)) return;
+  if ((await fs.exists(logPath)) || (await fs.exists(okPath))) return;
 
   const errors: string[] = [];
 
@@ -70,5 +71,7 @@ export default async function integrity(src: string) {
   if (errors.length) {
     await fs.writeFile(logPath, `${errors.join('\n\n')}\n`);
     console.log('Errors found in', file.path);
+  } else {
+    await fs.writeFile(okPath, new Date().toString());
   }
 }
