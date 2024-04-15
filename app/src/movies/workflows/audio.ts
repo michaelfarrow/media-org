@@ -12,8 +12,7 @@ export default async function audio(src: string) {
     if (
       streams.audio.length === 1 &&
       (streams.audio?.[0].channels || 0) >= 6 &&
-      data.format.tags?.CHECKED === 'yes' &&
-      (file.path.includes('Into Darkness') || file.path.includes('Dune (1984)'))
+      data.format.tags?.CHECKED === 'yes'
     ) {
       const tempPath = path.resolve(
         file.dir,
@@ -40,8 +39,8 @@ export default async function audio(src: string) {
         ['-afterburner', '1'],
       ]);
 
-      // await fs.remove(file.path);
-      // await fs.rename(tempPath, file.path);
+      await fs.remove(file.path);
+      await fs.rename(tempPath, file.path);
     }
   }
 }
