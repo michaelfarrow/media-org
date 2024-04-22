@@ -38,7 +38,7 @@ export async function choices<
 ): Promise<R> {
   const { allowNone } = options || {};
   const answer = await inquirer.prompt<{ selected: R }>({
-    name: 'selected?',
+    name: 'selected',
     type: 'list',
     message,
     choices: [
