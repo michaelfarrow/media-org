@@ -24,10 +24,18 @@ function toWords(text: string) {
   return words;
 }
 
+function getUnicode(char: string) {
+  const code = char.codePointAt(0);
+  if (code === undefined) return null;
+  const hex = code.toString(16);
+  return '\\u' + '0000'.substring(0, 4 - hex.length) + hex;
+}
+
 async function processSrt(file: File, data: ffmpeg.FfprobeData) {
   const duration = data.format.duration;
   let wordTotal = 0;
   const wordIncorrect: string[] = [];
+  const nonLatinChars: string[] = [];
 
   if (!duration) throw new Error(`Could not get duration: ${file.path}`);
 
@@ -60,6 +68,21 @@ async function processSrt(file: File, data: ffmpeg.FfprobeData) {
               }
             }
 
+            const _nonLatinChars = cleaned.match(
+              new RegExp(
+                `[^${[
+                  '\u0000-\u007F', // Basic Latin
+                  '\u0080-\u00FF', // Latin Extended-A
+                  '\u0180-\u024F', // Latin Extended-B
+                  '\u2000-\u206F', // General Punctuation
+                  '\u266a', // ♪
+                ].join('|')}]`,
+                'g'
+              )
+            );
+
+            if (_nonLatinChars?.length) nonLatinChars.push(..._nonLatinChars);
+
             if (node.data.text !== cleaned) {
               altered = true;
             }
@@ -89,6 +112,14 @@ async function processSrt(file: File, data: ffmpeg.FfprobeData) {
       `More than ${INCORRECT_WORD_PERCENT}% of words spelled incorrectly: (${uniq(
         wordIncorrect
       ).join(', ')})`
+    );
+  }
+
+  if (nonLatinChars.length) {
+    warnings.push(
+      `Non latin characters detected: (${uniq(nonLatinChars)
+        .map((c) => `"${c}" (${getUnicode(c)})`)
+        .join(', ')})`
     );
   }
 
