@@ -27,20 +27,30 @@ export async function input(message: string) {
   return answer.input.trim();
 }
 
-export async function choices<T>(
+export async function choices<
+  T,
+  O extends { allowNone?: boolean },
+  R = O['allowNone'] extends true ? T | undefined : T
+>(
   message: string,
-  choices: { name: string; value: T }[]
-) {
-  const answer = await inquirer.prompt<{ selected?: T }>({
-    name: 'selected',
+  choices: { name: string; value: T }[],
+  options?: O
+): Promise<R> {
+  const { allowNone } = options || {};
+  const answer = await inquirer.prompt<{ selected: R }>({
+    name: 'selected?',
     type: 'list',
     message,
     choices: [
-      { value: undefined, name: 'None' },
-      new inquirer.Separator(),
+      ...(allowNone
+        ? [
+            new inquirer.Separator(),
+            { value: undefined, name: 'None' },
+            new inquirer.Separator(),
+          ]
+        : []),
       ...choices,
     ],
   });
-
   return answer.selected;
 }

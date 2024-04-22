@@ -5,11 +5,29 @@ import { stripHtml } from 'string-strip-html';
 import path from 'path';
 import { type File, getFileTypes } from '@/lib/fs';
 import ffmpeg from '@/lib/ffmpeg';
+import { uniq } from 'lodash';
+import Typo from 'typo-js';
 
 import { processMovie } from './shared/process-movie';
 
+const INCORRECT_WORD_PERCENT = 1;
+const dictionary = new Typo('en_US');
+
+const segmenter = new (Intl as any).Segmenter([], { granularity: 'word' });
+
+function toWords(text: string) {
+  const segmentedText = segmenter.segment(text);
+  const words: string[] = [...segmentedText]
+    .filter((s) => s.isWordLike)
+    .map((s) => s.segment);
+
+  return words;
+}
+
 async function processSrt(file: File, data: ffmpeg.FfprobeData) {
   const duration = data.format.duration;
+  let wordTotal = 0;
+  const wordIncorrect: string[] = [];
 
   if (!duration) throw new Error(`Could not get duration: ${file.path}`);
 
@@ -18,11 +36,11 @@ async function processSrt(file: File, data: ffmpeg.FfprobeData) {
     `.${file.nameWithoutExt}.temp.${file.ext}`
   );
 
-  const { html, warnings } = await new Promise<{
-    html: boolean;
+  const { altered, warnings } = await new Promise<{
+    altered: boolean;
     warnings: string[];
   }>((resolve, reject) => {
-    let html = false;
+    let altered = false;
     let warnings: string[] = [];
 
     fs.createReadStream(file.path)
@@ -30,10 +48,20 @@ async function processSrt(file: File, data: ffmpeg.FfprobeData) {
       .pipe(
         map((node) => {
           if (node.type === 'cue') {
-            const cleaned = stripHtml(node.data.text).result;
+            let cleaned = stripHtml(node.data.text).result;
+            cleaned = cleaned.replace(/’/g, "'");
+
+            const words = toWords(cleaned);
+
+            for (const word of words) {
+              wordTotal++;
+              if (isNaN(Number(word)) && !dictionary.check(word)) {
+                wordIncorrect.push(word.toLowerCase());
+              }
+            }
 
             if (node.data.text !== cleaned) {
-              html = true;
+              altered = true;
             }
 
             const end = node.data.end / 1000;
@@ -51,17 +79,27 @@ async function processSrt(file: File, data: ffmpeg.FfprobeData) {
       .pipe(stringify({ format: 'SRT' }))
       .pipe(fs.createWriteStream(tempDest))
       .on('error', reject)
-      .on('finish', () => resolve({ html, warnings }));
+      .on('finish', () => resolve({ altered, warnings }));
   });
 
+  const incorrectWordPercent = (wordIncorrect.length / wordTotal) * 100;
+
+  if (incorrectWordPercent > INCORRECT_WORD_PERCENT) {
+    warnings.push(
+      `More than ${INCORRECT_WORD_PERCENT}% of words spelled incorrectly: (${uniq(
+        wordIncorrect
+      ).join(', ')})`
+    );
+  }
+
   if (warnings.length) {
-    for (const warning of warnings) {
+    for (const warning of uniq(warnings)) {
       console.log(colors.yellow(warning));
     }
   }
 
-  if (html) {
-    console.log('Removed HTML');
+  if (altered) {
+    console.log('Cleaned');
     await fs.move(tempDest, file.path, { overwrite: true });
   } else {
     await fs.remove(tempDest);

@@ -68,15 +68,15 @@ async function getFile(src: string) {
 }
 
 async function selectStream(
-  name: 'video' | 'audio' | 'subtitle',
+  name: 'video' | 'audio',
   streams: ffmpeg.FfprobeStream[],
   force?: boolean
 ) {
-  if (!streams || !streams.length) return Promise.resolve(null);
+  if (!streams || !streams.length) return Promise.resolve(undefined);
 
   if (streams.length === 1 && !force) return 0;
 
-  const r = await choices(
+  return await choices(
     `Select ${name} stream`,
     streams.map((s, i) => ({
       name: [s.codec_name, s.tags?.language, s.tags?.title]
@@ -85,8 +85,6 @@ async function selectStream(
       value: i,
     }))
   );
-
-  return r !== undefined ? Number(r) : null;
 }
 
 async function chooseStreams(src: string) {
@@ -103,9 +101,13 @@ async function chooseStreams(src: string) {
   return {
     chapters: data.chapters,
     video:
-      video !== null ? { index: video, stream: videoStreams[video] } : null,
+      video !== undefined
+        ? { index: video, stream: videoStreams[video] }
+        : null,
     audio:
-      audio !== null ? { index: audio, stream: audioStreams[audio] } : null,
+      audio !== undefined
+        ? { index: audio, stream: audioStreams[audio] }
+        : null,
     sub: subStreams,
     // sub: sub !== null ? { index: sub, stream: subStreams[sub] } : null,
   };
@@ -180,7 +182,8 @@ async function downloadSubtitles({
             .filter((s) => s !== undefined)
             .join(', ')}`,
           value: i,
-        }))
+        })),
+        { allowNone: true }
       );
 
       if (chosenSubtitleI !== undefined) {
@@ -230,7 +233,8 @@ async function downloadSubtitles({
             }`,
             value: i,
           };
-        })
+        }),
+        { allowNone: true }
       );
 
       if (chosenSubtitleI !== undefined) {
