@@ -42,6 +42,7 @@ FROM common as dev
 FROM common as dist
 
 COPY --from=build /app/node_modules/@img ./node_modules/@img
+COPY --from=build /app/node_modules/typo-js/dictionaries ./dictionaries
 COPY --from=build /app/dist ./dist
 COPY ./app/music /usr/local/bin/music
 COPY ./app/movies /usr/local/bin/movies
