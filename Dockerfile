@@ -33,7 +33,7 @@ RUN usermod -aG video node
 RUN chown node:node /app
 USER node
 
-ENTRYPOINT bash
+ENTRYPOINT ["bash"]
 
 
 FROM common AS dev
