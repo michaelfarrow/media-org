@@ -17,7 +17,7 @@ import {
   logTracks,
   logDiscs,
 } from '@/lib/namer';
-import { confirm } from '@/lib/ui';
+import { confirm, choices } from '@/lib/ui';
 
 export type ProcessTrack = (track: File, dest: string) => Promise<boolean>;
 
@@ -76,14 +76,14 @@ export default async function processUpdate(
   const { mbId, releaseExts, processTrack, postProcess } = options;
 
   const files = await getReleaseFiles(src, releaseExts);
-  const release = await getMbData(mbId);
+  const releaseAndGroup = await getMbData(mbId);
 
   if (!files || !files.length) {
     console.log('No audio files found');
     return false;
   }
 
-  if (!release) {
+  if (!releaseAndGroup) {
     console.log(`Release not found: ${mbId}`);
     return false;
   }
@@ -101,6 +101,7 @@ export default async function processUpdate(
     return false;
   }
 
+  let [release, releaseGroup] = releaseAndGroup;
   const similarity = compareFiles(files, release);
 
   if (similarity === false) throw new Error('Track count does not match');
@@ -131,6 +132,18 @@ export default async function processUpdate(
     console.log('');
 
     if (!(await confirm('Continue?'))) return false;
+  }
+
+  if (release.title !== releaseGroup.title) {
+    const releaseTitle = await choices(
+      `Group and release title are different, please choose`,
+      [
+        { name: releaseGroup.title, value: releaseGroup.title },
+        { name: release.title, value: release.title },
+      ]
+    );
+
+    release.title = releaseTitle;
   }
 
   const srcDest = path.resolve(src);

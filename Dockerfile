@@ -1,7 +1,7 @@
 FROM jrottenberg/ffmpeg:4.4-vaapi as ffmpeg
 
 
-FROM node:20.11.1 as build
+FROM node:20.11.1 AS build
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN npm install
 RUN npm run build
 
 
-FROM node:20.11.1-slim as common
+FROM node:20.11.1-slim AS common
 
 WORKDIR /app
 
@@ -36,10 +36,10 @@ USER node
 ENTRYPOINT bash
 
 
-FROM common as dev
+FROM common AS dev
 
 
-FROM common as dist
+FROM common AS dist
 
 COPY --from=build /app/node_modules/@img ./node_modules/@img
 COPY --from=build /app/dist ./dist

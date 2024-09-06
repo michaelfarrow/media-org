@@ -19,6 +19,12 @@ export const Track = z.object({
 
 export type Track = z.infer<typeof Track>;
 
+export const ReleaseGroup = z.object({
+  title: z.string(),
+});
+
+export type ReleaseGroup = z.infer<typeof ReleaseGroup>;
+
 export const Release = z.object({
   id: z.string(),
   artistId: z.string(),
@@ -99,10 +105,13 @@ export function replaceStrangeChars(str: string) {
     .replace(/’/g, "'")
     .replace(/[“”]/g, '"')
     .replace(/[‐‒]/g, '-')
-    .replace(/×/g, 'x');
+    .replace(/×/g, 'x')
+    .replace(/\.\.\./g, '…');
 }
 
-export async function getMbData(id: string): Promise<Release | undefined> {
+export async function getMbData(
+  id: string
+): Promise<[Release, ReleaseGroup] | undefined> {
   try {
     const release = await mb.lookup('release', id, [
       'artists',
@@ -136,7 +145,8 @@ export async function getMbData(id: string): Promise<Release | undefined> {
     if (!credit) throw new Error('Cannot find artist');
 
     const artistName = replaceStrangeChars(credit.name);
-    const albumTitle = replaceStrangeChars(group.title);
+    const groupTitle = replaceStrangeChars(group.title);
+    const albumTitle = replaceStrangeChars(release.title);
 
     const discs = release.media
       .filter(
@@ -189,18 +199,23 @@ export async function getMbData(id: string): Promise<Release | undefined> {
     //   ).map((genre) => genre.name.trim())
     // );
 
-    return {
-      id: release.id,
-      artistId: credit.id,
-      groupId: group.id,
-      title: albumTitle,
-      disambiguation: disambiguation?.length ? disambiguation : undefined,
-      artist: artistName,
-      year,
-      // wikipedia: wikipediaRel?.url?.resource,
-      // wikidata: wikidataRel?.url?.resource,
-      discs,
-    };
+    return [
+      {
+        id: release.id,
+        artistId: credit.id,
+        groupId: group.id,
+        title: albumTitle,
+        disambiguation: disambiguation?.length ? disambiguation : undefined,
+        artist: artistName,
+        year,
+        // wikipedia: wikipediaRel?.url?.resource,
+        // wikidata: wikidataRel?.url?.resource,
+        discs,
+      },
+      {
+        title: groupTitle,
+      },
+    ];
   } catch (e) {
     return undefined;
   }
