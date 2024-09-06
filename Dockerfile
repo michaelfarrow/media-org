@@ -1,4 +1,4 @@
-FROM jrottenberg/ffmpeg:4.4-vaapi as ffmpeg
+FROM jrottenberg/ffmpeg:4.4-vaapi AS ffmpeg
 
 
 FROM node:20.11.1 AS build
