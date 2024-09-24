@@ -135,15 +135,27 @@ export default async function processUpdate(
   }
 
   if (release.title !== releaseGroup.title) {
-    const releaseTitle = await choices(
+    const releaseOrGroup = await choices(
       `Group and release title are different, please choose`,
       [
-        { name: releaseGroup.title, value: releaseGroup.title },
-        { name: release.title, value: release.title },
+        {
+          name: releaseGroup.title,
+          value: { title: releaseGroup.title, year: release.year },
+        },
+        {
+          name: release.title,
+          value: {
+            title: release.title,
+            year: release.releaseYear || release.year,
+          },
+        },
       ]
     );
 
-    release.title = releaseTitle;
+    release.title = releaseOrGroup.title;
+    release.year = releaseOrGroup.year;
+
+    delete release.releaseYear;
   }
 
   const srcDest = path.resolve(src);

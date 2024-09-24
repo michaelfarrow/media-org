@@ -33,6 +33,7 @@ export const Release = z.object({
   disambiguation: z.string().optional(),
   artist: z.string(),
   year: z.string(),
+  releaseYear: z.string().optional(),
   discs: z.array(z.array(Track)),
 });
 
@@ -185,10 +186,11 @@ export async function getMbData(
         })
       );
 
-    const year = group['first-release-date']?.match(/^\d{4}/)?.[0];
+    const yearFirst = group['first-release-date']?.match(/^\d{4}/)?.[0];
+    const year = release.date?.match(/^\d{4}/)?.[0];
     const disambiguation = group.disambiguation?.trim();
 
-    if (!year) throw new Error('Could not find/parse release year');
+    if (!yearFirst) throw new Error('Could not find/parse release year');
 
     // const genres = _.uniq(
     //   (group.genres && group.genres.length
@@ -207,7 +209,8 @@ export async function getMbData(
         title: albumTitle,
         disambiguation: disambiguation?.length ? disambiguation : undefined,
         artist: artistName,
-        year,
+        year: yearFirst,
+        releaseYear: year || yearFirst,
         // wikipedia: wikipediaRel?.url?.resource,
         // wikidata: wikidataRel?.url?.resource,
         discs,
